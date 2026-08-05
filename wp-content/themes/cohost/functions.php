@@ -1,4 +1,8 @@
 <?php
+
+require_once get_stylesheet_directory() . '/prop_hub.php';
+
+
 // ============================================================
 // Onboarding Checklist — WordPress admin page version
 // Uses $wpdb since onboarding_tasks lives in the same DB as WordPress
