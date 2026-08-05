@@ -1,0 +1,34 @@
+
+/*
+Theme Name: Cohost Theme 
+Theme URI: http://benjaminlouie.com
+Author: Kaiba Corporation 
+Description: Property of Kaiba Corporation
+Version: 1.0
+*/
+
+.pagination a {
+    color: #FFF;
+    padding: 8px 16px;
+    text-decoration: none;
+    border: 1px solid #ddd;
+    margin: 0 4px;
+    display: inline-block;
+}
+
+.pagination a:hover {
+    background-color: #edd0d0;
+    color: #332e2e !important;
+}
+
+.pagination span.current {
+    padding: 8px 16px;
+    margin: 0 4px;
+    background-color: #333;
+    color: #fff;
+    border-radius: 3px;
+}
+
+.recent-post-title {
+    margin-bottom: 0em;
+}
