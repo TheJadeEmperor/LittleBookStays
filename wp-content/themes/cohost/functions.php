@@ -13,6 +13,8 @@ require_once get_stylesheet_directory() . '/prop_hub.php';
 // If onboarding_tasks lives in the SAME database as WordPress,
 // delete this whole PDO block and use $wpdb instead (see note at bottom).
 function lbs_onboarding_db() {
+echo 'test';
+
     static $pdo = null;
     if ($pdo === null) {
         $DB_HOST = 'localhost';
