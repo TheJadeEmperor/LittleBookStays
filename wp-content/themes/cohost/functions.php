@@ -1,39 +1,9 @@
 <?php
 // ============================================================
 // Onboarding Checklist — WordPress admin page version
+// Uses $wpdb since onboarding_tasks lives in the same DB as WordPress
 // Add this to functions.php in the cohost theme
 // ============================================================
-
-
-require_once get_stylesheet_directory() . '/prop_hub.php';
-
-
-
-// --- DB credentials for the onboarding_tasks table ---
-// If onboarding_tasks lives in the SAME database as WordPress,
-// delete this whole PDO block and use $wpdb instead (see note at bottom).
-function lbs_onboarding_db() {
-echo 'test';
-
-    static $pdo = null;
-    if ($pdo === null) {
-        $DB_HOST = 'localhost';
-        $DB_NAME = 'rentals';
-        $DB_USER = 'root';
-        $DB_PASS = 'password';
-
-        $pdo = new PDO(
-            "mysql:host={$DB_HOST};dbname={$DB_NAME};charset=utf8mb4",
-            $DB_USER,
-            $DB_PASS,
-            [
-                PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            ]
-        );
-    }
-    return $pdo;
-}
 
 // --- Register the admin menu page ---
 add_action('admin_menu', 'lbs_add_admin_pages');
@@ -50,7 +20,7 @@ function lbs_add_admin_pages() {
     );
 }
 
-// --- Helper: slugify for anchor ids (same as old index.php) ---
+// --- Helper: slugify for anchor ids ---
 function lbs_slugify($text) {
     $slug = strtolower(trim($text));
     $slug = preg_replace('/[^a-z0-9]+/', '-', $slug);
@@ -75,13 +45,14 @@ function lbs_render_onboarding_page() {
         return;
     }
 
-    $pdo = lbs_onboarding_db();
-    $stmt = $pdo->query(
-        'SELECT task_key, parent_key, section, subsection, label, is_checked
+    global $wpdb;
+
+    $allTasks = $wpdb->get_results(
+        "SELECT task_key, parent_key, section, subsection, label, is_checked
          FROM onboarding_tasks
-         ORDER BY sort_order'
+         ORDER BY sort_order",
+        ARRAY_A
     );
-    $allTasks = $stmt->fetchAll();
 
     $topLevel = [];
     $childrenOf = [];
@@ -255,9 +226,14 @@ function lbs_toggle_onboarding_task() {
         wp_send_json_error(['error' => 'Missing task_key or checked value'], 400);
     }
 
-    $pdo = lbs_onboarding_db();
-    $stmt = $pdo->prepare('UPDATE onboarding_tasks SET is_checked = :checked WHERE task_key = :key');
-    $stmt->execute([':checked' => $checked, ':key' => $taskKey]);
+    global $wpdb;
+    $wpdb->update(
+        'onboarding_tasks',
+        ['is_checked' => $checked],
+        ['task_key' => $taskKey],
+        ['%d'],
+        ['%s']
+    );
 
     wp_send_json_success(['task_key' => $taskKey, 'checked' => (bool) $checked]);
 }
