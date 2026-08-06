@@ -2,7 +2,6 @@
 
 require_once get_stylesheet_directory() . '/prop_hub.php';
 
-
 // ============================================================
 // Onboarding Checklist — WordPress admin page version
 // Uses $wpdb since onboarding_tasks lives in the same DB as WordPress
@@ -32,14 +31,18 @@ function lbs_slugify($text) {
 }
 
 // --- Helper: render a single task row ---
+// Clicking anywhere on the row (except the checkbox itself) turns the
+// label into an editable text field. Blurring the field saves it via AJAX.
 function lbs_render_task($task, $nested = false) {
     $key = esc_attr($task['task_key']);
     $classes = 'task' . ($nested ? ' nested' : '');
-    echo '<div class="' . $classes . '">';
+    echo '<div class="' . $classes . '" data-key="' . $key . '">';
     echo '<input type="checkbox" id="' . $key . '" data-key="' . $key . '"'
         . ($task['is_checked'] ? ' checked' : '') . '>';
-    echo '<label for="' . $key . '" class="' . ($task['is_checked'] ? 'checked' : '') . '">'
-        . esc_html($task['label']) . '</label>';
+    echo '<span class="task-label-wrap">';
+    echo '<span class="task-label' . ($task['is_checked'] ? ' checked' : '') . '" data-key="' . $key . '">'
+        . esc_html($task['label']) . '</span>';
+    echo '</span>';
     echo '</div>';
 }
 
@@ -98,7 +101,8 @@ function lbs_render_onboarding_page() {
         if ($t['is_checked']) $checkedCount++;
     }
 
-    $nonce = wp_create_nonce('lbs_onboarding_toggle');
+    $toggleNonce = wp_create_nonce('lbs_onboarding_toggle');
+    $labelNonce  = wp_create_nonce('lbs_onboarding_label');
     $ajaxUrl = admin_url('admin-ajax.php');
     ?>
     <div class="wrap">
@@ -167,24 +171,36 @@ function lbs_render_onboarding_page() {
         .task { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 14px; break-inside: avoid; }
         .task.nested { margin-left: 28px; border-bottom: 1px dashed #eee; }
         .task input[type="checkbox"] { width: 17px; height: 17px; cursor: pointer; flex-shrink: 0; }
-        .task label { cursor: pointer; }
-        .task label.checked { text-decoration: line-through; color: #999; }
+        .task-label-wrap { flex: 1; min-height: 20px; cursor: text; }
+        .task-label { cursor: text; }
+        .task-label.checked { text-decoration: line-through; color: #999; }
+        .task-label-input {
+            width: 100%;
+            font-size: 14px;
+            font-family: inherit;
+            border: 1px solid #999;
+            border-radius: 3px;
+            padding: 2px 6px;
+            box-sizing: border-box;
+        }
     </style>
 
     <script>
     (function () {
         const ajaxUrl = <?= json_encode($ajaxUrl) ?>;
-        const nonce = <?= json_encode($nonce) ?>;
+        const toggleNonce = <?= json_encode($toggleNonce) ?>;
+        const labelNonce = <?= json_encode($labelNonce) ?>;
 
+        // --- Checkbox toggle ---
         document.querySelectorAll('#kc-task-list input[type="checkbox"]').forEach(function (checkbox) {
             checkbox.addEventListener('change', function () {
                 const taskKey = this.dataset.key;
                 const checked = this.checked;
-                const label = document.querySelector('label[for="' + taskKey + '"]');
+                const labelSpan = document.querySelector('.task-label[data-key="' + taskKey + '"]');
 
                 const body = new URLSearchParams();
                 body.append('action', 'lbs_toggle_onboarding_task');
-                body.append('nonce', nonce);
+                body.append('nonce', toggleNonce);
                 body.append('task_key', taskKey);
                 body.append('checked', checked ? '1' : '0');
 
@@ -196,7 +212,7 @@ function lbs_render_onboarding_page() {
                 .then(function (res) { return res.json(); })
                 .then(function (data) {
                     if (data.success) {
-                        label.classList.toggle('checked', checked);
+                        labelSpan.classList.toggle('checked', checked);
                     } else {
                         checkbox.checked = !checked;
                         alert('Could not save: ' + (data.data && data.data.error ? data.data.error : 'unknown error'));
@@ -208,12 +224,82 @@ function lbs_render_onboarding_page() {
                 });
             });
         });
+
+        // --- Inline label editing ---
+        // Clicking the label, or the empty space next to it (.task-label-wrap),
+        // swaps the text into an editable input. Blurring saves it.
+        document.querySelectorAll('.task-label-wrap').forEach(function (wrap) {
+            wrap.addEventListener('click', function () {
+                const labelSpan = wrap.querySelector('.task-label');
+                if (!labelSpan) return; // already editing
+
+                const taskKey = labelSpan.dataset.key;
+                const currentText = labelSpan.textContent;
+                const wasChecked = labelSpan.classList.contains('checked');
+
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'task-label-input';
+                input.value = currentText;
+                input.dataset.key = taskKey;
+
+                wrap.replaceChild(input, labelSpan);
+                input.focus();
+                input.select();
+
+                function saveAndRevert() {
+                    const newText = input.value.trim();
+
+                    const newLabel = document.createElement('span');
+                    newLabel.className = 'task-label' + (wasChecked ? ' checked' : '');
+                    newLabel.dataset.key = taskKey;
+                    newLabel.textContent = newText;
+                    wrap.replaceChild(newLabel, input);
+
+                    if (newText === currentText) return; // nothing changed, skip the request
+
+                    const body = new URLSearchParams();
+                    body.append('action', 'lbs_update_onboarding_label');
+                    body.append('nonce', labelNonce);
+                    body.append('task_key', taskKey);
+                    body.append('label', newText);
+
+                    fetch(ajaxUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: body.toString()
+                    })
+                    .then(function (res) { return res.json(); })
+                    .then(function (data) {
+                        if (!data.success) {
+                            newLabel.textContent = currentText; // revert on failure
+                            alert('Could not save: ' + (data.data && data.data.error ? data.data.error : 'unknown error'));
+                        }
+                    })
+                    .catch(function () {
+                        newLabel.textContent = currentText;
+                        alert('Network error - could not save change.');
+                    });
+                }
+
+                input.addEventListener('blur', saveAndRevert);
+                input.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        input.blur();
+                    } else if (e.key === 'Escape') {
+                        input.value = currentText;
+                        input.blur();
+                    }
+                });
+            }, { once: false });
+        });
     })();
     </script>
     <?php
 }
 
-// --- AJAX handler for toggling a checkbox ---
+// --- AJAX handler: toggle a checkbox ---
 add_action('wp_ajax_lbs_toggle_onboarding_task', 'lbs_toggle_onboarding_task');
 
 function lbs_toggle_onboarding_task() {
@@ -240,4 +326,33 @@ function lbs_toggle_onboarding_task() {
     );
 
     wp_send_json_success(['task_key' => $taskKey, 'checked' => (bool) $checked]);
+}
+
+// --- AJAX handler: save an edited label ---
+add_action('wp_ajax_lbs_update_onboarding_label', 'lbs_update_onboarding_label');
+
+function lbs_update_onboarding_label() {
+    check_ajax_referer('lbs_onboarding_label', 'nonce');
+
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error(['error' => 'Not allowed'], 403);
+    }
+
+    $taskKey = isset($_POST['task_key']) ? sanitize_text_field($_POST['task_key']) : '';
+    $label   = isset($_POST['label']) ? sanitize_text_field($_POST['label']) : '';
+
+    if ($taskKey === '' || $label === '') {
+        wp_send_json_error(['error' => 'Missing task_key or label'], 400);
+    }
+
+    global $wpdb;
+    $wpdb->update(
+        'onboarding_tasks',
+        ['label' => $label],
+        ['task_key' => $taskKey],
+        ['%s'],
+        ['%s']
+    );
+
+    wp_send_json_success(['task_key' => $taskKey, 'label' => $label]);
 }
