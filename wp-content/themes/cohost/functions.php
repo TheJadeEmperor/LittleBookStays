@@ -1,5 +1,6 @@
 <?php
 
+
 require_once get_stylesheet_directory() . '/prop_hub.php';
 
 // ============================================================
@@ -30,9 +31,29 @@ function lbs_slugify($text) {
     return trim($slug, '-');
 }
 
+// --- Helper: turn any http(s) URLs inside a label into clickable links,
+// truncating the displayed text (not the href) if it's over 50 chars ---
+function lbs_linkify_label($text) {
+    $parts = preg_split('/(https?:\/\/[^\s]+)/i', $text, -1, PREG_SPLIT_DELIM_CAPTURE);
+    $html = '';
+    foreach ($parts as $i => $part) {
+        if ($i % 2 === 1) {
+            // Odd indices are the captured URLs. Trim trailing punctuation
+            // that's likely sentence punctuation, not part of the URL.
+            $url = rtrim($part, '.,);:');
+            $display = strlen($url) > 50 ? substr($url, 0, 47) . '...' : $url;
+            $html .= '<a href="' . esc_url($url) . '" target="_blank" rel="noopener noreferrer">'
+                . esc_html($display) . '</a>';
+        } else {
+            $html .= esc_html($part);
+        }
+    }
+    return $html;
+}
+
 // --- Helper: render a single task row ---
-// Clicking anywhere on the row (except the checkbox itself) turns the
-// label into an editable text field. Blurring the field saves it via AJAX.
+// Clicking anywhere on the row (except the checkbox, or a link inside the
+// label) turns the label into an editable text field. Blurring saves it.
 function lbs_render_task($task, $nested = false) {
     $key = esc_attr($task['task_key']);
     $classes = 'task' . ($nested ? ' nested' : '');
@@ -40,8 +61,9 @@ function lbs_render_task($task, $nested = false) {
     echo '<input type="checkbox" id="' . $key . '" data-key="' . $key . '"'
         . ($task['is_checked'] ? ' checked' : '') . '>';
     echo '<span class="task-label-wrap">';
-    echo '<span class="task-label' . ($task['is_checked'] ? ' checked' : '') . '" data-key="' . $key . '">'
-        . esc_html($task['label']) . '</span>';
+    echo '<span class="task-label' . ($task['is_checked'] ? ' checked' : '') . '" data-key="' . $key . '" data-raw="'
+        . esc_attr($task['label']) . '">'
+        . lbs_linkify_label($task['label']) . '</span>';
     echo '</span>';
     echo '</div>';
 }
@@ -174,6 +196,8 @@ function lbs_render_onboarding_page() {
         .task-label-wrap { flex: 1; min-height: 20px; cursor: text; }
         .task-label { cursor: text; }
         .task-label.checked { text-decoration: line-through; color: #999; }
+        .task-label a { color: #2271b1; text-decoration: none; }
+        .task-label a:hover { text-decoration: underline; }
         .task-label-input {
             width: 100%;
             font-size: 14px;
@@ -228,13 +252,36 @@ function lbs_render_onboarding_page() {
         // --- Inline label editing ---
         // Clicking the label, or the empty space next to it (.task-label-wrap),
         // swaps the text into an editable input. Blurring saves it.
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // Mirrors lbs_linkify_label() in PHP: turns URLs into clickable
+        // links and truncates the displayed text (not the href) over 50 chars.
+        function linkifyLabel(text) {
+            const parts = text.split(/(https?:\/\/[^\s]+)/i);
+            return parts.map(function (part, i) {
+                if (i % 2 === 1) {
+                    const url = part.replace(/[.,);:]+$/, '');
+                    const display = url.length > 50 ? url.slice(0, 47) + '...' : url;
+                    return '<a href="' + escapeHtml(url) + '" target="_blank" rel="noopener noreferrer">'
+                        + escapeHtml(display) + '</a>';
+                }
+                return escapeHtml(part);
+            }).join('');
+        }
+
         document.querySelectorAll('.task-label-wrap').forEach(function (wrap) {
-            wrap.addEventListener('click', function () {
+            wrap.addEventListener('click', function (e) {
+                if (e.target.closest('a')) return; // let the link open normally
+
                 const labelSpan = wrap.querySelector('.task-label');
                 if (!labelSpan) return; // already editing
 
                 const taskKey = labelSpan.dataset.key;
-                const currentText = labelSpan.textContent;
+                const currentText = labelSpan.dataset.raw; // full, untruncated text
                 const wasChecked = labelSpan.classList.contains('checked');
 
                 const input = document.createElement('input');
@@ -253,7 +300,8 @@ function lbs_render_onboarding_page() {
                     const newLabel = document.createElement('span');
                     newLabel.className = 'task-label' + (wasChecked ? ' checked' : '');
                     newLabel.dataset.key = taskKey;
-                    newLabel.textContent = newText;
+                    newLabel.dataset.raw = newText;
+                    newLabel.innerHTML = linkifyLabel(newText);
                     wrap.replaceChild(newLabel, input);
 
                     if (newText === currentText) return; // nothing changed, skip the request
@@ -272,12 +320,14 @@ function lbs_render_onboarding_page() {
                     .then(function (res) { return res.json(); })
                     .then(function (data) {
                         if (!data.success) {
-                            newLabel.textContent = currentText; // revert on failure
+                            newLabel.dataset.raw = currentText;
+                            newLabel.innerHTML = linkifyLabel(currentText); // revert on failure
                             alert('Could not save: ' + (data.data && data.data.error ? data.data.error : 'unknown error'));
                         }
                     })
                     .catch(function () {
-                        newLabel.textContent = currentText;
+                        newLabel.dataset.raw = currentText;
+                        newLabel.innerHTML = linkifyLabel(currentText);
                         alert('Network error - could not save change.');
                     });
                 }
