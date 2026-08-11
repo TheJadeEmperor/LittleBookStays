@@ -1,7 +1,7 @@
 <?php
 
-
 require_once get_stylesheet_directory() . '/prop_hub.php';
+
 
 // ============================================================
 // Onboarding Checklist — WordPress admin page version
@@ -22,7 +22,365 @@ function lbs_add_admin_pages() {
         'dashicons-yes-alt',
         3
     );
+ 
+    add_menu_page(
+        'Standard Operating Procedures', //page_title
+        'SOP', //menu_title
+        'manage_options',  //capability
+        'lbs-sop', //menu_slug 
+        'lbs_sop_page', //function 
+        'dashicons-yes-alt', //icon_url
+        4  //position 
+    );
+
+    add_submenu_page(  
+        'lbs-sop', //parent_slug
+        'SOP Bad Review', //page_title
+        'Bad Review SOP', //menu_title
+        'manage_options', //capability
+        'bad-review', //menu_slug
+        'sop_bad_review', //function
+        4 //
+    );
+
+    add_submenu_page(  
+        'lbs-sop', //parent_slug
+        'Early C-in & Late C-out', //page_title
+        'Late C-out', //menu_title
+        'manage_options', //capability
+        'late-c-out', //menu_slug
+        'late_c_out', //function
+        4 //
+    );
+
+    add_submenu_page(  
+        'lbs-sop', //parent_slug
+        'Owner Stay aka Owner Use', //page_title
+        'Owner Stay', //menu_title
+        'manage_options', //capability
+        'owner-stay', //menu_slug
+        'owner_stay', //function
+        4 //
+    );
+
+    add_submenu_page(  
+        'lbs-sop', //parent_slug
+        'VRBO Extra Charge for Damage or Unauthorized Checkout', //page_title
+        'VRBO Extra Charge', //menu_title
+        'manage_options', //capability
+        'vrbo-extra-charge', //menu_slug
+        'vrbo_extra_charge', //function
+        4 //
+    );
+
+    add_submenu_page(  
+        'lbs-sop', //parent_slug
+        'Reporting Goddam Guests', //page_title
+        'Goddam Guests', //menu_title
+        'manage_options', //capability
+        'goddam-guests', //menu_slug
+        'goddam_guests', //function
+        4 //
+    );
+
+
+    add_submenu_page(  
+        'lbs-sop', //parent_slug
+        'Items Left Behind | Abandoned Items | Instr for Cleaners', //page_title
+        'Items Left Behind', //menu_title
+        'manage_options', //capability
+        'items_left_behind', //menu_slug
+        'items_left_behind', //function
+        4 //
+    );
 }
+
+
+function lbs_sop_page () {
+
+}
+
+
+
+function items_left_behind () {
+?>
+    
+    <h2>Instructions for Cleaners</h2>
+    <ol>
+    <li>Throw out any perishable items like food or drinks. Leave unopened water in the fridge for next guests.</li>
+    <li>Keep items that we can use for the property like candles, board games, etc. for future guests to use.</li>
+    <li>For personal items (such as jewelry, shoes, clothes, or a kid's stuffed animal), save them in the storage closet in case the guest would like to retrieve them.</li>
+    </ol>
+
+    <h2>Guest Communication</h2>
+    <ol>
+    <li>If the guest does not reach out within a week, the cleaners can discard the personal belongings during the next turnover.</li>
+    <li>For guests who have left the city:
+        <ol type="a">
+        <li>If the guest would like their items mailed to them, ask for their mailing address and request money for extra services through the Airbnb or Vrbo platform.</li>
+        <li>Only send the items after the shipping fee has been paid for.</li>
+        </ol>
+    </li>
+    <li>For guests who live nearby or have not yet left the city:
+        <ol type="a">
+        <li>If the guest can stop by and pick up their items, please coordinate with the cleaning team so that future guests are not disturbed. Give the guests a specific time and date to pick up their items.</li>
+        </ol>
+    </li>
+    </ol>
+    
+
+    <?php
+}
+
+
+function vrbo_extra_charge () {
+?>
+    <h2>VRBO Extra Charge Request</h2>
+    <p>You can send a request for an additional payment for any extra charges like late checkout, parking permits, and other incidentals. You can add up to five additional payment requests per booking.</p>
+    <p>Requested additional payments are not automatically charged; the guest must pay the additional payment in order to receive the stay extension or incidentals you are charging extra for. Payment requests expire if the guest doesn't pay after three days.</p>
+    <ol>
+    <li>Log in to your account.</li>
+    <li>Select the listing if you have multiple properties.</li>
+    <li>Select <strong>Inbox</strong>.</li>
+    <li>Select <strong>Filters</strong> to filter your conversations.
+    <ul>
+        <li>You can also enter the guest's name or reservation ID (Res ID) into the search bar.</li>
+    </ul>
+    </li>
+    <li>Select the guest's name.</li>
+    <li>Select <strong>Add extra charge</strong> from Payment schedule.</li>
+    <li>Select <strong>Fee name</strong> from the drop-down menu. Enter the full amount, due date, and a brief message.</li>
+    <li>Select <strong>Review</strong>.</li>
+    <li>Select <strong>Send additional charge</strong>.</li>
+    </ol>
+    <p>Should you require any further assistance, you can reach out to us back through chat and phone support via this number<br>
+    <strong>877-228-3145 or 877-202-4291</strong></p>
+
+    <p><em>Scenario: guest did some damage, or missing items, or caused extra cleaning</em></p>
+
+    <h3>Damage claim:</h3>
+    <ul>
+    <li>Go to Inbox on Vrbo and select that RSVP</li>
+    <li>Select damage claim - it goes to an external insurance service called CSA</li>
+    <li>Submit pictures &amp; receipts of claim</li>
+    </ul>
+    <ul>
+    <li>Ask cleaner for pictures of damages</li>
+    <li>Get receipt from cleaner for extra cleaning charge</li>
+    <li>Get receipt from handyman</li>
+    </ul>
+    <p>After claim - wait 5 days for an email from Generali Global Assistance</p>
+
+    <h2>Initiate your payment from Generali Global Assistance</h2>
+    <ol>
+    <li>Log in or create an account using this email address.</li>
+    <li>Verify your identity.</li>
+    <li>Select your preferred method of payment.</li>
+    <li>Initiate your payment.</li>
+    <li>Get your payment within 1 hours to 3 days.</li>
+    </ol>
+
+
+<?php
+}
+
+
+function goddam_guests () {
+    ?>
+
+    <h2>Dispute Refund / Reporting Hostile Guests</h2>
+    <ul>
+    <li>Report guest's profile on Airbnb - select scammer</li>
+    <li>Then contact help on Airbnb - talk to a rep</li>
+    </ul>
+
+    <p><strong>Message to Rep:</strong></p>
+
+    <p>Hello [Representative Name], thank you for your message and for respecting our time zone difference. We really appreciate it.</p>
+
+    <p>Thanks for bringing this to our awareness about [Guest].</p>
+
+    <p>We were happy to resolve directly with the guest. However, after some back and forth the guest got hostile and have made threats in which we felt uncomfortable. We want to mention that we've reported this guest and his account for multiple accounts of harassment before today. He has also contacted us at unreasonable hours in the night.</p>
+
+    <p>We do not list or advertise an ___ as an amenity in our listing, therefore that information is irrelevant. The guest failed to mention damage.</p>
+
+    <p>In addition, the guest has violated our house rules to notify of any damages immediately and Airbnb's Rebooking and Refund Policy - to notify within 72 hours. He made mention of these things post check out and we do not believe it warrants compensation. We hope you'll take our feedback into careful consideration. We have been hosts a long time and value the honesty and support of the Airbnb community.</p>
+
+    <?php
+}
+
+
+function hire_photographer () {
+    ?> 
+        
+    <h1>Sourcing Photographer</h1>
+
+    <h2>Where to find leads</h2>
+    <ol>
+    <li>Instagram: search "#yourtownrealestate" "#yourtownrealestatephotographer"</li>
+    <li>Google: "Your town vacation rental photographer"</li>
+    <li>Facebook groups: search in vacation rental groups for recommended photographers</li>
+    </ol>
+
+    <h2>Questions to Ask</h2>
+    <ol>
+    <li>How long have you been doing real estate photography?</li>
+    <li>How many Airbnb's have you photographed?</li>
+    <li>In your opinion what's the biggest difference between traditional real estate and vacation rental photos?</li>
+    <li>Do you do any staging?</li>
+    <li>How many photos are generally included?</li>
+    <li>What is your turnaround time?</li>
+    <li>How far out are you booking?</li>
+    <li>Can we reschedule if the lighting isn't good?</li>
+    <li>Do you offer aerial photography?</li>
+    </ol>
+
+    <h2>Pricing Questions</h2>
+    <ol>
+    <li>What is your most common package?</li>
+    <li>Is there any additional cost to shoot at sunset/twilight?</li>
+    </ol>
+
+    <h2>Example photos we like</h2>
+    <p>We are looking for photographers who understand how to create a "WOW" factor for the cover photo, this means they will be photoshopping the sky, making sure all lights are on, picking great angles etc.</p>
+    <p>The time of day they shoot is also super important!</p>
+
+    <h2>Importance of Photography</h2>
+    <p><strong>Before</strong></p>
+    <img src="p_before.jpg" alt="Before">
+    <p><strong>After</strong></p>
+    <img src="p_after.jpg" alt="After">
+    <p>Exterior should be shot at twilight to market correctly</p>
+
+    <h2>Day of considerations</h2>
+    <ol>
+    <li>Make sure unit is 100% CLEANED</li>
+    <li>We would like for photographer to stage units, blow up pool toys put out games etc
+        <ol type="a">
+        <li>Turn on fire pit / hot tub / exterior lighting including string lights / open outdoor umbrellas.</li>
+        <li>Make sure trash or broken furniture is out of picture</li>
+        </ol>
+    </li>
+    <li>Ensure the weather is ideal for lighting purposes otherwise we should reschedule</li>
+    <li>Ensure they have proper access codes and instructions</li>
+    </ol>
+
+    <h2>List of Photos</h2>
+    <ol>
+    <li>Every bathroom - 3-4 photos of bathroom including, sink, toilet, bathtub/shower, etc.</li>
+    <li>Bedroom - 3-4 of every room including, closet, attached bathrooms, TV, view, etc.</li>
+    <li>Kitchen - 4-5 including all appliances, island area, breakfast nook, etc.</li>
+    <li>Living Room</li>
+    <li>Game Room (if applicable)</li>
+    <li>Pool/hot tub</li>
+    <li>Patio Area including furniture, grill, etc.</li>
+    <li>Formal dining room - 3-4 of every room</li>
+    <li>Balcony</li>
+    </ol>
+
+    <h1>Things to avoid</h1>
+    <p>See photo's below</p>
+
+    <?php
+}
+
+
+function owner_stay () {
+    ?>
+
+        Owner Use or Owner Stay 
+
+        Client uses their own house for a vacation
+
+        Create booking in the Hospital
+
+        Client pay the cleaner fees for the previous turn 
+
+        2 choices
+
+        1. We pay the cleaning fee & invoice the client - easier option for client
+        - Do NOT use Paypal - they take a chunk of fees. $400 results in $385, a big chunk is lost
+        - Make invoice from Merc Bank
+        1. Client pays the cleaner’s invoice directly - easier option for us
+
+<?php
+}
+
+
+function late_c_out () {
+    ?>
+
+    **Preceded by Orphan Day**
+
+    *Guest asks for early check-in and no one is currently staying the night before guest is checking in*
+
+    - **if they asked for the early check-in within 48 hours of their schedule check in:**
+
+    **Response**: We should be able to get you in a bit early! We currently don’t have someone staying the night before, so assuming it stays that way, a check in time of *whatever the requested time is, so long as it is after **noon*** should work. That said, if someone books the night before you at the last minute, then we will have to give our cleaner some time to clean up the house for you 😊 Right now you’re good to go for the early check-in, but we will let you know if anything changes!
+
+    **Action**: Make a note in the “Notes” area on Hospitable/Guesty that the guest will be checking in at ____ o’clock.
+
+    - **if they asked for the early check-in more than 48 hours of their schedule check in:**
+
+    **Response:** (canned answer on Hospitable/Guesty) Hi, %guest first name%! Unfortunately, we cannot promise an early check-in. Our cleaning window is typically between 11:00 AM - 3:00 PM. We will have a better idea on the day of your arrival whether it's possible. If cleaning is completed early, we would be happy to update you immediately.
+
+    **Preceded by Booked Day**
+
+    - **If they asked for the early check-in within 48 hours of their schedule check in:**
+
+    **Response**: We should be able to get you in a bit early! We currently don’t have someone staying the night before, so assuming it stays that way, a check in time of *whatever the requested time is, so long as it is after **noon*** should work. That said, if someone books the night before you at the last minute, then we will have to give our cleaner some time to clean up the house for you 😊 Right now you’re good to go for the early check-in, but we will let you know if anything changes!
+
+    **Action**: Make a note in the “Notes” area on Hospitable/Guesty that the guest will be checking in at ____ o’clock.
+
+
+    How to charge guest for late check outs 
+
+
+    30-60 min late ⇒ $50 late fee
+
+    Every hour after the first hour ⇒ $50 per hour 
+
+    Do this within Airbnb resolution center
+    Or make an extra request on VRBO
+
+    <?php
+}
+
+
+function sop_bad_review() {
+?>
+    <h1>Bad Review SOP</h1>
+
+    <p>Send message to guest from Hospitable<br>
+    <a href="https://my.hospitable.com/inbox/segments/default">https://my.hospitable.com/inbox/segments/default</a></p>
+
+    <hr>
+
+    <h2>If guest agrees to delete review:</h2>
+    <p>Airbnb said guest can call their hotline &amp; get it removed:<br>
+    Airbnb's hotline: <a href="tel:4158005959">415 800 5959</a></p>
+
+    <hr>
+
+    <h2>What we can do is reply to their review</h2>
+    <p>Public reply to the review from Hospitable<br>
+    <a href="https://my.hospitable.com/inbox/segments/default">https://my.hospitable.com/inbox/segments/default</a></p>
+
+    <hr>
+
+    <h2>Review Form</h2>
+    <p>Use review form - can only try 2x per review</p>
+    <p><a href="https://www.airbnb.com/resolution/review_dispute/intro">https://www.airbnb.com/resolution/review_dispute/intro</a><br>
+    Request to remove a review you received - Airbnb</p>
+
+    </body>
+    </html>
+
+
+    <?php
+}
+
+
 
 // --- Helper: slugify for anchor ids ---
 function lbs_slugify($text) {
