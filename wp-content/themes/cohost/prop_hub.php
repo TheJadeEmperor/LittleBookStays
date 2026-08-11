@@ -4,29 +4,21 @@
 // LBS
 // ============================================================
 
-// --- DB credentials for the pm_* tables ---
+// --- DB connection for the pm_* tables ---
 // NOTE: the SQL dumps for pm_prop_hub / pm_cleaners / pm_contractors are
 // all under database `rentals`, not `props` (where onboarding_tasks
-// lives). Adjust DB_NAME below if your local WAMP setup differs.
+// lives). `rentals` sits on the SAME MySQL server/user as the WordPress
+// database in both local WAMP and Live, so we reuse WordPress's own
+// DB_USER / DB_PASSWORD / DB_HOST constants (from wp-config.php) and just
+// point a second wpdb instance at the `rentals` database instead of
+// hardcoding root/password/localhost. This is what makes it work in both
+// environments without editing this file per-environment.
 function lbs_prop_hub_db() {
-    static $pdo = null;
-    if ($pdo === null) {
-        $DB_HOST = 'localhost';
-        $DB_NAME = 'rentals';
-        $DB_USER = 'root';
-        $DB_PASS = 'password';
-
-        $pdo = new PDO(
-            "mysql:host={$DB_HOST};dbname={$DB_NAME};charset=utf8mb4",
-            $DB_USER,
-            $DB_PASS,
-            [
-                PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            ]
-        );
+    static $wpdb_rentals = null;
+    if ($wpdb_rentals === null) {
+        $wpdb_rentals = new wpdb(DB_USER, DB_PASSWORD, 'rentals', DB_HOST);
     }
-    return $pdo;
+    return $wpdb_rentals;
 }
 
 // --- Register the admin menu page ---
@@ -194,17 +186,21 @@ function lbs_fetch_table_rows($sqlTable, $columns, $orderBy) {
         $selectFields[] = $orderBy;
     }
 
-    try {
-        $pdo = lbs_prop_hub_db();
-        $stmt = $pdo->query(
-            'SELECT ' . implode(', ', $selectFields) . '
-             FROM ' . $sqlTable . '
-             ORDER BY ' . $orderBy
-        );
-        return ['rows' => $stmt->fetchAll(), 'error' => null];
-    } catch (PDOException $e) {
-        return ['rows' => [], 'error' => $e->getMessage()];
+    $wpdb_r = lbs_prop_hub_db();
+    $wpdb_r->last_error = ''; // clear any stale error from a previous query
+
+    $rows = $wpdb_r->get_results(
+        'SELECT ' . implode(', ', $selectFields) . '
+         FROM ' . $sqlTable . '
+         ORDER BY ' . $orderBy,
+        ARRAY_A
+    );
+
+    if ($wpdb_r->last_error) {
+        return ['rows' => [], 'error' => $wpdb_r->last_error];
     }
+
+    return ['rows' => $rows ?: [], 'error' => null];
 }
 
 // --- Render one Notion-style table section (heading + table + count) ---
@@ -602,9 +598,20 @@ function lbs_update_prop_status() {
         wp_send_json_error(['error' => 'Invalid property or status value'], 400);
     }
 
-    $pdo = lbs_prop_hub_db();
-    $stmt = $pdo->prepare('UPDATE pm_prop_hub SET status = :status WHERE num = :num');
-    $stmt->execute([':status' => $status, ':num' => $num]);
+    $wpdb_r = lbs_prop_hub_db();
+    $wpdb_r->last_error = '';
+
+    $wpdb_r->update(
+        'pm_prop_hub',
+        ['status' => $status],
+        ['num' => $num],
+        ['%d'],
+        ['%d']
+    );
+
+    if ($wpdb_r->last_error) {
+        wp_send_json_error(['error' => $wpdb_r->last_error], 500);
+    }
 
     wp_send_json_success(['num' => $num, 'status' => $status]);
 }
