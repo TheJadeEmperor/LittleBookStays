@@ -4,23 +4,6 @@
 // LBS
 // ============================================================
 
-// --- DB connection for the pm_* tables ---
-// NOTE: the SQL dumps for pm_prop_hub / pm_cleaners / pm_contractors are
-// all under database `rentals`, not `props` (where onboarding_tasks
-// lives). `rentals` sits on the SAME MySQL server/user as the WordPress
-// database in both local WAMP and Live, so we reuse WordPress's own
-// DB_USER / DB_PASSWORD / DB_HOST constants (from wp-config.php) and just
-// point a second wpdb instance at the `rentals` database instead of
-// hardcoding root/password/localhost. This is what makes it work in both
-// environments without editing this file per-environment.
-function lbs_prop_hub_db() {
-    static $wpdb_rentals = null;
-    if ($wpdb_rentals === null) {
-        $wpdb_rentals = new wpdb(DB_USER, DB_PASSWORD, 'rentals', DB_HOST);
-    }
-    return $wpdb_rentals;
-}
-
 // --- Register the admin menu page ---
 add_action('admin_menu', 'lbs_add_prop_hub_page');
 
@@ -186,18 +169,18 @@ function lbs_fetch_table_rows($sqlTable, $columns, $orderBy) {
         $selectFields[] = $orderBy;
     }
 
-    $wpdb_r = lbs_prop_hub_db();
-    $wpdb_r->last_error = ''; // clear any stale error from a previous query
+    global $wpdb;
+    $wpdb->last_error = ''; // clear any stale error from a previous query
 
-    $rows = $wpdb_r->get_results(
+    $rows = $wpdb->get_results(
         'SELECT ' . implode(', ', $selectFields) . '
          FROM ' . $sqlTable . '
          ORDER BY ' . $orderBy,
         ARRAY_A
     );
 
-    if ($wpdb_r->last_error) {
-        return ['rows' => [], 'error' => $wpdb_r->last_error];
+    if ($wpdb->last_error) {
+        return ['rows' => [], 'error' => $wpdb->last_error];
     }
 
     return ['rows' => $rows ?: [], 'error' => null];
@@ -598,10 +581,10 @@ function lbs_update_prop_status() {
         wp_send_json_error(['error' => 'Invalid property or status value'], 400);
     }
 
-    $wpdb_r = lbs_prop_hub_db();
-    $wpdb_r->last_error = '';
+    global $wpdb;
+    $wpdb->last_error = '';
 
-    $wpdb_r->update(
+    $wpdb->update(
         'pm_prop_hub',
         ['status' => $status],
         ['num' => $num],
@@ -609,8 +592,8 @@ function lbs_update_prop_status() {
         ['%d']
     );
 
-    if ($wpdb_r->last_error) {
-        wp_send_json_error(['error' => $wpdb_r->last_error], 500);
+    if ($wpdb->last_error) {
+        wp_send_json_error(['error' => $wpdb->last_error], 500);
     }
 
     wp_send_json_success(['num' => $num, 'status' => $status]);
