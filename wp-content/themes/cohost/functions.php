@@ -1,7 +1,7 @@
 <?php
 
 require_once get_stylesheet_directory() . '/prop_hub.php';
-
+require_once get_stylesheet_directory() . '/power_dialer.php';
 
 // ============================================================
 // Onboarding Checklist — WordPress admin page version
@@ -40,7 +40,7 @@ function lbs_add_admin_pages() {
         'manage_options', //capability
         'bad-review', //menu_slug
         'sop_bad_review', //function
-        4 //
+        1 //
     );
 
     add_submenu_page(  
@@ -70,7 +70,7 @@ function lbs_add_admin_pages() {
         'manage_options', //capability
         'vrbo-extra-charge', //menu_slug
         'vrbo_extra_charge', //function
-        4 //
+        1 //
     );
 
     add_submenu_page(  
@@ -80,7 +80,7 @@ function lbs_add_admin_pages() {
         'manage_options', //capability
         'goddam-guests', //menu_slug
         'goddam_guests', //function
-        4 //
+       1 //
     );
 
 
@@ -89,17 +89,199 @@ function lbs_add_admin_pages() {
         'Items Left Behind | Abandoned Items | Instr for Cleaners', //page_title
         'Items Left Behind', //menu_title
         'manage_options', //capability
-        'items_left_behind', //menu_slug
+        'items-left-behind', //menu_slug
         'items_left_behind', //function
+        4 //
+    );
+
+    
+    add_submenu_page(  
+        'lbs-sop', //parent_slug
+        'Sourcing Contractors', //page_title
+        'Contractors', //menu_title
+        'manage_options', //capability
+        'contractors', //menu_slug
+        'contractors', //function
+        4 //
+    );
+
+     add_submenu_page(  
+        'lbs-sop', //parent_slug
+        'Maintenance SOP', //page_title
+        'Maintenance SOP', //menu_title
+        'manage_options', //capability
+        'maint-sop', //menu_slug
+        'maint_sop', //function
         4 //
     );
 }
 
 
 function lbs_sop_page () {
+    ?>
+    <h1>SOP</h1>
+    <p>&nbsp;</p>
 
+    <h2>Goddam Guests</h2>
+    <p><a href="admin.php?page=goddam-guests">Reporting Goddam Guests</a></p>
+    <p><a href="admin.php?page=lbs-sop">Bad Review SOP</a></p>
+    <p><a href="admin.php?page=vrbo-extra-charge">VRBO Extra Charge Request</a></p>
+
+
+    <h2>Items Left Behind</h2>
+    <p><a href="admin.php?page=items-left-behind">Items Left Behind</a></p>
+
+    <h2>Contractors</h2>
+    <p><a href="admin.php?page=vrbo-extra-charge">Contractors</a></p>
+
+    <h2>Contractors</h2>
+    <p><a href="admin.php?page=contractors">Contractors</a></p>
+    <p><a href="admin.php?page=maint-sop">Maintenance SOP</a></p>
+   
+
+    <h2>Owner Use or Owner Stay</h2>
+    <p><a href="admin.php?page=owner-stay">Owner Use or Owner Stay</a></p>
+
+    <?php
 }
 
+
+function maint_sop () { 
+    ?>
+
+    <h1>Format for Contractors Appt &amp; Payment</h1>
+
+    <h2>Schedule Appt</h2>
+
+    <p><strong>Quick Note (BEFORE SENDING):</strong></p>
+    <ul>
+    <li>We can't assume they will always be available so typically this is something we send once availability is confirmed for the date</li>
+    <li>A phone call to discuss and explain the situation is preferred when possible</li>
+    </ul>
+
+    <p><strong>TEMPLATE:</strong></p>
+    <ol>
+    <li>Date of requested service (day of the week and date)</li>
+    <li>We are looking for a vacancy in the calendar. We do not want to disturb guests unless they specifically request an issue to be addressed during their stay.</li>
+    <li>This service will typically be during a turnover</li>
+    <li>Address of service location</li>
+    <li>Range of time they would have access (this will typically be from check-out to check-in, same day)</li>
+    <li>Check-In Instructions (Door code, lockbox combination, etc.)</li>
+    <li>Numerical list of items that need to be addressed</li>
+    </ol>
+
+    <p><a href="https://app.close.com/activities/custom-activity/actitype_3oEjtZdr8UkkqfmtJBDdWi/save_bjqFnOtjRgQsI0Qm9AqG4fSPAGxCtCfOgK6oskcFcIS/share_5laUSCgAYlWHZwV4wUiSk5/">https://app.close.com/activities/custom-activity/actitype_3oEjtZdr8UkkqfmtJBDdWi/save_bjqFnOtjRgQsI0Qm9AqG4fSPAGxCtCfOgK6oskcFcIS/share_5laUSCgAYlWHZwV4wUiSk5/</a></p>
+
+    <h3>EXAMPLE 1:</h3>
+    <p><strong>Thursday (3/30)</strong></p>
+    <p><em>1111 Lilac Way, Davenport, FL 33897</em></p>
+    <p>Time frame: 10am - 4pm</p>
+    <p>Door Code: 0000</p>
+    <ol>
+    <li>Fix the plexiglass issue? We can purchase new plexiglass to replace</li>
+    <li>Need to replace slabs on the curtains (Can we buy the amount we need?)</li>
+    <li>Change the remotes needed for fans or do whatever is needed to ensure remotes are working for fans and lights</li>
+    <li>Check if the ping pong table is unstable and what would be the fix</li>
+    </ol>
+
+    <h3>EXAMPLE 2:</h3>
+    <p><strong>Wednesday (3/29) or Thursday (3/30):</strong></p>
+    <p><em>1111 St Davenport FL 33897</em></p>
+    <p>Time Frame: Any time before 4pm (can go earlier if available, there is no guest there right now)</p>
+    <p>Lock box combination: 0000.</p>
+    <ol>
+    <li>Dishwasher not working (Need to evaluate, hopefully it's a simple fix)</li>
+    </ol>
+
+    <h2>Payment SOP</h2>
+
+    <p>If plumber takes CC</p>
+    <ul>
+    <li>If you have owner's CC
+        <ul>
+        <li>Give Owner's CC info to plumber</li>
+        </ul>
+    </li>
+    <li>If not
+        <ul>
+        <li>Pay plumber from your CC then invoice the owner</li>
+        </ul>
+    </li>
+    </ul>
+
+    <p>If vendor takes venmo/paypal – add to owner's CC +3% fee</p>
+
+    <?php
+}
+
+
+function contractors () { 
+    ?>
+ 
+    <h1>Format for Contractors Appt &amp; Payment</h1>
+
+    <h2>Schedule Appt</h2>
+
+    <p><strong>Quick Note (BEFORE SENDING):</strong></p>
+    <ul>
+    <li>We can't assume they will always be available so typically this is something we send once availability is confirmed for the date</li>
+    <li>A phone call to discuss and explain the situation is preferred when possible</li>
+    </ul>
+
+    <p><strong>TEMPLATE:</strong></p>
+    <ol>
+    <li>Date of requested service (day of the week and date)</li>
+    <li>We are looking for a vacancy in the calendar. We do not want to disturb guests unless they specifically request an issue to be addressed during their stay.</li>
+    <li>This service will typically be during a turnover</li>
+    <li>Address of service location</li>
+    <li>Range of time they would have access (this will typically be from check-out to check-in, same day)</li>
+    <li>Check-In Instructions (Door code, lockbox combination, etc.)</li>
+    <li>Numerical list of items that need to be addressed</li>
+    </ol>
+
+    <p><a href="https://app.close.com/activities/custom-activity/actitype_3oEjtZdr8UkkqfmtJBDdWi/save_bjqFnOtjRgQsI0Qm9AqG4fSPAGxCtCfOgK6oskcFcIS/share_5laUSCgAYlWHZwV4wUiSk5/">https://app.close.com/activities/custom-activity/actitype_3oEjtZdr8UkkqfmtJBDdWi/save_bjqFnOtjRgQsI0Qm9AqG4fSPAGxCtCfOgK6oskcFcIS/share_5laUSCgAYlWHZwV4wUiSk5/</a></p>
+
+    <h3>EXAMPLE 1:</h3>
+    <p><strong>Thursday (3/30)</strong></p>
+    <p><em>1111 Lilac Way, Davenport, FL 33897</em></p>
+    <p>Time frame: 10am - 4pm</p>
+    <p>Door Code: 0000</p>
+    <ol>
+    <li>Fix the plexiglass issue? We can purchase new plexiglass to replace</li>
+    <li>Need to replace slabs on the curtains (Can we buy the amount we need?)</li>
+    <li>Change the remotes needed for fans or do whatever is needed to ensure remotes are working for fans and lights</li>
+    <li>Check if the ping pong table is unstable and what would be the fix</li>
+    </ol>
+
+    <h3>EXAMPLE 2:</h3>
+    <p><strong>Wednesday (3/29) or Thursday (3/30):</strong></p>
+    <p><em>1111 St Davenport FL 33897</em></p>
+    <p>Time Frame: Any time before 4pm (can go earlier if available, there is no guest there right now)</p>
+    <p>Lock box combination: 0000.</p>
+    <ol>
+    <li>Dishwasher not working (Need to evaluate, hopefully it's a simple fix)</li>
+    </ol>
+
+    <h2>Payment SOP</h2>
+
+    <p>If plumber takes CC</p>
+    <ul>
+    <li>If you have owner's CC
+        <ul>
+        <li>Give Owner's CC info to plumber</li>
+        </ul>
+    </li>
+    <li>If not
+        <ul>
+        <li>Pay plumber from your CC then invoice the owner</li>
+        </ul>
+    </li>
+    </ul>
+
+    <p>If vendor takes venmo/paypal – add to owner's CC +3% fee</p>
+ 
+    <?php
+}
 
 
 function items_left_behind () {
@@ -288,20 +470,22 @@ function hire_photographer () {
 function owner_stay () {
     ?>
 
-        Owner Use or Owner Stay 
-
-        Client uses their own house for a vacation
-
-        Create booking in the Hospital
-
-        Client pay the cleaner fees for the previous turn 
-
-        2 choices
-
-        1. We pay the cleaning fee & invoice the client - easier option for client
-        - Do NOT use Paypal - they take a chunk of fees. $400 results in $385, a big chunk is lost
-        - Make invoice from Merc Bank
-        1. Client pays the cleaner’s invoice directly - easier option for us
+    <h2>Owner Use or Owner Stay</h2>
+    <p>Client uses their own house for a vacation.</p>
+    <ol>
+    <li>Create booking in Hospitable calendar</li>
+    <li>Client pays the turnover fees for the previous turn - 2 choices:
+        <ol type="a">
+        <li>We pay the cleaning fee &amp; invoice the client - easier option for client
+            <ul>
+            <li>Do NOT use PayPal - they take a chunk of fees. $400 results in $385, a big chunk is lost</li>
+            <li>Make invoice from Merc Bank</li>
+            </ul>
+        </li>
+        <li>Client pays the cleaner's invoice directly - easier option for us</li>
+        </ol>
+    </li>
+    </ol>
 
 <?php
 }
@@ -310,38 +494,31 @@ function owner_stay () {
 function late_c_out () {
     ?>
 
-    **Preceded by Orphan Day**
+   <h2>Early Check-In Requests</h2>
 
-    *Guest asks for early check-in and no one is currently staying the night before guest is checking in*
+<h3>Preceded by Orphan Day</h3>
+<p><em>Guest asks for early check-in and no one is currently staying the night before guest is checking in</em></p>
 
-    - **if they asked for the early check-in within 48 hours of their schedule check in:**
+<p><strong>If they asked for the early check-in within 48 hours of their scheduled check-in:</strong></p>
+<p><strong>Response:</strong> We should be able to get you in a bit early! We currently don't have someone staying the night before, so assuming it stays that way, a check in time of <em>whatever the requested time is, so long as it is after <strong>noon</strong></em> should work. That said, if someone books the night before you at the last minute, then we will have to give our cleaner some time to clean up the house for you 😊 Right now you're good to go for the early check-in, but we will let you know if anything changes!</p>
+<p><strong>Action:</strong> Make a note in the "Notes" area on Hospitable/Guesty that the guest will be checking in at ____ o'clock.</p>
 
-    **Response**: We should be able to get you in a bit early! We currently don’t have someone staying the night before, so assuming it stays that way, a check in time of *whatever the requested time is, so long as it is after **noon*** should work. That said, if someone books the night before you at the last minute, then we will have to give our cleaner some time to clean up the house for you 😊 Right now you’re good to go for the early check-in, but we will let you know if anything changes!
+<p><strong>If they asked for the early check-in more than 48 hours of their scheduled check-in:</strong></p>
+<p><strong>Response:</strong> (canned answer on Hospitable/Guesty)<br>
+Hi, %guest first name%! Unfortunately, we cannot promise an early check-in. Our cleaning window is typically between 11:00 AM - 3:00 PM. We will have a better idea on the day of your arrival whether it's possible. If cleaning is completed early, we would be happy to update you immediately.</p>
 
-    **Action**: Make a note in the “Notes” area on Hospitable/Guesty that the guest will be checking in at ____ o’clock.
+<h3>Preceded by Booked Day</h3>
+<p><strong>If they asked for the early check-in within 48 hours of their scheduled check-in:</strong></p>
+<p><strong>Response:</strong> We should be able to get you in a bit early! We currently don't have someone staying the night before, so assuming it stays that way, a check in time of <em>whatever the requested time is, so long as it is after <strong>noon</strong></em> should work. That said, if someone books the night before you at the last minute, then we will have to give our cleaner some time to clean up the house for you 😊 Right now you're good to go for the early check-in, but we will let you know if anything changes!</p>
+<p><strong>Action:</strong> Make a note in the "Notes" area on Hospitable/Guesty that the guest will be checking in at ____ o'clock.</p>
 
-    - **if they asked for the early check-in more than 48 hours of their schedule check in:**
-
-    **Response:** (canned answer on Hospitable/Guesty) Hi, %guest first name%! Unfortunately, we cannot promise an early check-in. Our cleaning window is typically between 11:00 AM - 3:00 PM. We will have a better idea on the day of your arrival whether it's possible. If cleaning is completed early, we would be happy to update you immediately.
-
-    **Preceded by Booked Day**
-
-    - **If they asked for the early check-in within 48 hours of their schedule check in:**
-
-    **Response**: We should be able to get you in a bit early! We currently don’t have someone staying the night before, so assuming it stays that way, a check in time of *whatever the requested time is, so long as it is after **noon*** should work. That said, if someone books the night before you at the last minute, then we will have to give our cleaner some time to clean up the house for you 😊 Right now you’re good to go for the early check-in, but we will let you know if anything changes!
-
-    **Action**: Make a note in the “Notes” area on Hospitable/Guesty that the guest will be checking in at ____ o’clock.
-
-
-    How to charge guest for late check outs 
-
-
-    30-60 min late ⇒ $50 late fee
-
-    Every hour after the first hour ⇒ $50 per hour 
-
-    Do this within Airbnb resolution center
-    Or make an extra request on VRBO
+<h2>How to charge guest for late check outs</h2>
+<ul>
+  <li>30-60 min late ⇒ $50 late fee</li>
+  <li>Every hour after the first hour ⇒ $50 per hour</li>
+</ul>
+<p>Do this within Airbnb resolution center<br>
+Or make an extra request on VRBO</p>
 
     <?php
 }
