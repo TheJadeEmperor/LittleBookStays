@@ -86,6 +86,17 @@ function lbs_add_admin_pages() {
 
     add_submenu_page(  
         'lbs-sop', //parent_slug
+        'RSVP Cancellation Refund Policies', //page_title
+        'RSVP Cancellation ', //menu_title
+        'manage_options', //capability
+        'rsvp-cancel', //menu_slug
+        'rsvp_cancel', //function
+       1 //
+    );
+
+
+    add_submenu_page(  
+        'lbs-sop', //parent_slug
         'Items Left Behind | Abandoned Items | Instr for Cleaners', //page_title
         'Items Left Behind', //menu_title
         'manage_options', //capability
@@ -126,6 +137,7 @@ function lbs_sop_page () {
     <p><a href="admin.php?page=goddam-guests">Reporting Goddam Guests</a></p>
     <p><a href="admin.php?page=lbs-sop">Bad Review SOP</a></p>
     <p><a href="admin.php?page=vrbo-extra-charge">VRBO Extra Charge Request</a></p>
+    <p><a href="admin.php?page=rsvp-cancel">RSVP Cancellation Refund Policies</a></p>
 
 
     <h2>Items Left Behind</h2>
@@ -137,13 +149,61 @@ function lbs_sop_page () {
     <h2>Contractors</h2>
     <p><a href="admin.php?page=contractors">Contractors</a></p>
     <p><a href="admin.php?page=maint-sop">Maintenance SOP</a></p>
-   
 
     <h2>Owner Use or Owner Stay</h2>
     <p><a href="admin.php?page=owner-stay">Owner Use or Owner Stay</a></p>
 
     <?php
 }
+
+function rsvp_cancel () { 
+    ?>
+
+    <h1>Choose from 1 of these options</h1>
+
+
+    <h2>Firm - stick to policy</h1>
+
+    <p>Do not give a refund</p>
+
+    <h2>Immediate Rebook Refund</h2>
+
+    <p>Hi %guest_name% </p>
+    <p>Thanks again for speaking with me earlier! As discussed, per our cancellation policy, bookings canceled within 6 days of check-in are non-refundable. However, we want to make sure you get value out of your trip!</p>
+
+    <p>Here is what we can do for you:</p>
+
+    <p>Immediate Rebook Refund: If you initiate the cancellation on your end now, we will immediately reopen the calendar. We will gladly issue a cash refund for any nights that get rebooked by another guest. </p>
+
+    <h2>1 Year Credit</h2>
+
+
+    <p>Hi  %guest_name% </p>
+    Thanks again for speaking with me earlier! As discussed, per our cancellation policy, bookings canceled within 6 days of check-in are non-refundable. However, we want to make sure you get value out of your trip!
+
+    <p>Here is what we can do for you:</p>
+
+    <p>1-Year Stay Credit: If any of your nights do not rebook, we will convert that remaining balance into a 1-Year Credit! You can apply it toward a future stay at this home anytime within the next 12 months (subject to availability, equal nightly value, and excluding major holiday periods).*</p>
+
+
+    <h2>Immediate Rebook Refund & 1 Year Credit</h2>
+
+
+    <p>Hi  %guest_name% </p>
+    <p>Thanks again for speaking with me earlier! As discussed, per our cancellation policy, bookings canceled within 6 days of check-in are non-refundable. However, we want to make sure you get value out of your trip!</p>
+
+    <p>Here is what we can do for you:</p>
+
+    <p>Immediate Rebook Refund: If you initiate the cancellation on your end now, we will immediately reopen the calendar. We will gladly issue a cash refund for any nights that get rebooked by another guest.</p>
+
+    <p>1-Year Stay Credit: If any of your nights do not rebook, we will convert that remaining balance into a 1-Year Credit! You can apply it toward a future stay at this home anytime within the next 12 months (subject to availability, equal nightly value, and excluding major holiday periods).*</p>
+
+    <p>Please submit the cancellation request on your end whenever you're ready so we can get those dates back live on the calendar!</p>
+
+
+    <?php
+}
+
 
 
 function maint_sop () { 
