@@ -9,6 +9,71 @@ require_once get_stylesheet_directory() . '/power_dialer.php';
 // Add this to functions.php in the cohost theme
 // ============================================================
 
+
+
+// --- Register the admin menu page ---
+add_action('admin_menu', 'lbs_guest_sop');
+
+function lbs_guest_sop() {
+    add_menu_page(
+        'Goddam Guests',
+        'Goddam Guests',
+        'manage_options',
+        'guest-sop',
+        'pg_goddam_guests',
+        'dashicons-yes-alt',
+        4
+    );
+
+   add_submenu_page(  
+        'guest-sop', //parent_slug
+        'Reporting Guests', //page_title
+        'Reporting Guests', //menu_title
+        'manage_options', //capability
+        'goddam-guests', //menu_slug
+        'pg_goddam_guests', //function
+       1 //
+    );
+    
+    add_submenu_page(  
+        'guest-sop', //parent_slug
+        'RSVP Cancellation Refund Policies', //page_title
+        'RSVP Cancellation ', //menu_title
+        'manage_options', //capability
+        'rsvp-cancel', //menu_slug
+        'rsvp_cancel', //function
+       1 //
+    );
+
+
+    
+    add_submenu_page(  
+        'guest-sop', //parent_slug
+        'VRBO Extra Charge for Damage or Unauthorized Checkout', //page_title
+        'VRBO Extra Charge', //menu_title
+        'manage_options', //capability
+        'vrbo-extra-charge', //menu_slug
+        'vrbo_extra_charge', //function
+        1 //
+    );
+
+
+    add_submenu_page(  
+        'guest-sop', //parent_slug
+        'Items Left Behind | Abandoned Items | Instr for Cleaners', //page_title
+        'Items Left Behind', //menu_title
+        'manage_options', //capability
+        'items-left-behind', //menu_slug
+        'items_left_behind', //function
+        4 //
+    );
+
+
+}
+
+
+
+
 // --- Register the admin menu page ---
 add_action('admin_menu', 'lbs_add_admin_pages');
 
@@ -60,48 +125,6 @@ function lbs_add_admin_pages() {
         'manage_options', //capability
         'owner-stay', //menu_slug
         'owner_stay', //function
-        4 //
-    );
-
-    add_submenu_page(  
-        'lbs-sop', //parent_slug
-        'VRBO Extra Charge for Damage or Unauthorized Checkout', //page_title
-        'VRBO Extra Charge', //menu_title
-        'manage_options', //capability
-        'vrbo-extra-charge', //menu_slug
-        'vrbo_extra_charge', //function
-        1 //
-    );
-
-    add_submenu_page(  
-        'lbs-sop', //parent_slug
-        'Reporting Goddam Guests', //page_title
-        'Goddam Guests', //menu_title
-        'manage_options', //capability
-        'goddam-guests', //menu_slug
-        'goddam_guests', //function
-       1 //
-    );
-
-
-    add_submenu_page(  
-        'lbs-sop', //parent_slug
-        'RSVP Cancellation Refund Policies', //page_title
-        'RSVP Cancellation ', //menu_title
-        'manage_options', //capability
-        'rsvp-cancel', //menu_slug
-        'rsvp_cancel', //function
-       1 //
-    );
-
-
-    add_submenu_page(  
-        'lbs-sop', //parent_slug
-        'Items Left Behind | Abandoned Items | Instr for Cleaners', //page_title
-        'Items Left Behind', //menu_title
-        'manage_options', //capability
-        'items-left-behind', //menu_slug
-        'items_left_behind', //function
         4 //
     );
 
@@ -187,7 +210,6 @@ function rsvp_cancel () {
 
 
     <h2>Immediate Rebook Refund & 1 Year Credit</h2>
-
 
     <p>Hi  %guest_name% </p>
     <p>Thanks again for speaking with me earlier! As discussed, per our cancellation policy, bookings canceled within 6 days of check-in are non-refundable. However, we want to make sure you get value out of your trip!</p>
@@ -427,7 +449,7 @@ function vrbo_extra_charge () {
 }
 
 
-function goddam_guests () {
+function pg_goddam_guests () {
     ?>
 
     <h2>Dispute Refund / Reporting Hostile Guests</h2>
