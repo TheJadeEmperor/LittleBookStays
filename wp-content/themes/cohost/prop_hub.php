@@ -62,13 +62,11 @@ function lbs_cleaners_columns() {
     return [
         ['key' => 'id',        'label' => 'ID',          'type' => 'num'],
         ['key' => 'name',      'label' => 'Cleaner',     'type' => 'title'],
-        ['key' => 'prop_id',   'label' => 'Property #',  'type' => 'num'],
-        ['key' => 'role',      'label' => 'Role',        'type' => 'text'],
-        ['key' => 'manager',   'label' => 'Manager',     'type' => 'text'],
-        ['key' => 'staff',     'label' => 'Staff',       'type' => 'text'],
         ['key' => 'scheduler', 'label' => 'Scheduler',   'type' => 'text'],
-        ['key' => 'chat',      'label' => 'Chat',        'type' => 'text'],
-        ['key' => 'turnover',  'label' => 'Turnover',    'type' => 'text'],
+        ['key' => 'chat',   'label' => 'Chat',     'type' => 'text'],
+        ['key' => 'manager',   'label' => 'Manager',        'type' => 'text'],
+        ['key' => 'staff',     'label' => 'Staff',       'type' => 'text'],
+       
         ['key' => 'close',     'label' => 'Close CRM',   'type' => 'link', 'chip' => 'CRM'],
         ['key' => 'photos',    'label' => 'Photos',      'type' => 'link', 'chip' => 'Folder'],
     ];
@@ -249,7 +247,7 @@ function lbs_render_prop_hub_page() {
 
         <?php
         lbs_render_table_section('Properties', 'pm_prop_hub', $propData['rows'], $propColumns, $propData['error'], 'lbs_render_prop_cell');
-        lbs_render_table_section('Cleaners', 'pm_cleaners', $cleanerData['rows'], $cleanerColumns, $cleanerData['error'], 'lbs_render_generic_cell');
+        lbs_render_table_section('Cleaner Center', 'pm_cleaners', $cleanerData['rows'], $cleanerColumns, $cleanerData['error'], 'lbs_render_generic_cell');
         lbs_render_table_section('Contractors', 'pm_contractors', $contractorData['rows'], $contractorColumns, $contractorData['error'], 'lbs_render_generic_cell');
         ?>
     </div>
