@@ -1,8 +1,17 @@
 <?php
 
+
 require_once get_stylesheet_directory() . '/pm/prop_hub.php';
 require_once get_stylesheet_directory() . '/pm/power_dialer.php';
 require_once get_stylesheet_directory() . '/pm/user_roles.php';
+
+// --- Hide the "WordPress X.X is available! Please update now." admin nag ---
+// Note: this only hides the visual notice, it does not stop WP from
+// checking for or installing updates. The site is still on the old version.
+add_action( 'admin_head', 'lbs_hide_update_nag' );
+function lbs_hide_update_nag() {
+    echo '<style>.update-nag{display:none !important;}</style>';
+}
 
 // ============================================================
 // Onboarding Checklist — WordPress admin page version

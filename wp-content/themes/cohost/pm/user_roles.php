@@ -78,3 +78,12 @@ function lbs_grant_admin_custom_caps() {
         $admin->add_cap('lbs_view_admin_pages');
     }
 }
+
+add_action('after_switch_theme', 'lbs_remove_default_roles');
+
+function lbs_remove_default_roles() {
+    remove_role('author');
+    remove_role('contributor');
+    remove_role('editor');
+    remove_role('subscriber');
+}
