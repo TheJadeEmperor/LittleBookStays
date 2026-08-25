@@ -1,7 +1,8 @@
 <?php
 
-require_once get_stylesheet_directory() . '/prop_hub.php';
-require_once get_stylesheet_directory() . '/power_dialer.php';
+require_once get_stylesheet_directory() . '/pm/prop_hub.php';
+require_once get_stylesheet_directory() . '/pm/power_dialer.php';
+require_once get_stylesheet_directory() . '/pm/user_roles.php';
 
 // ============================================================
 // Onboarding Checklist — WordPress admin page version
@@ -10,7 +11,6 @@ require_once get_stylesheet_directory() . '/power_dialer.php';
 // ============================================================
 
 
- 
 
 // --- Register the admin menu page ---
 add_action('admin_menu', 'lbs_add_admin_pages');
@@ -19,7 +19,7 @@ function lbs_add_admin_pages() {
     add_menu_page(
         'Onboarding',
         'Onboarding',
-        'manage_options',
+        'lbs_view_admin_pages',
         'lbs-onboarding',
         'lbs_render_onboarding_page',
         'dashicons-yes-alt',
@@ -29,7 +29,7 @@ function lbs_add_admin_pages() {
     add_menu_page(
         'Standard Operating Procedures', //page_title
         'SOP', //menu_title
-        'manage_options',  //capability
+        'lbs_view_admin_pages',  //capability
         'lbs-sop', //menu_slug 
         'lbs_sop_page', //function 
         'dashicons-yes-alt', //icon_url
@@ -64,97 +64,8 @@ function lbs_sop_page () {
 }
  
  
-
-function owner_stay () {
-    ?>
-
-    <h2>Owner Use or Owner Stay</h2>
-    <p>Client uses their own house for a vacation</p>
-    <ol>
-    <li><p>Create booking in Hospitable calendar</p></li>
-    <li><p>Client pays the turnover fees for the previous turn</p>
-        <ul>
-            <li>We pay the cleaning fee &amp; invoice the client </li>
-             
-            <li>Do NOT use PayPal - they take a chunk of fees. $400 results in $385, a big chunk is lost</li>
-            <li>Make invoice from Merc Bank</li>
-        </ul>
-
-    <li><p>Contract states client must not take up more than 30 days in a calendar year, and no more than 15 days during peak season - June to August</p></li> 
-
-    </li>
-    </ol>
-
-<?php
-}
-
-
-function late_c_out () {
-    ?>
-
-   <h2>Early Check-In Requests</h2>
-
-    <h3>Preceded by Orphan Day</h3>
-    <p><em>Guest asks for early check-in and no one is currently staying the night before guest is checking in</em></p>
-
-    <p><strong>If they asked for the early check-in within 48 hours of their scheduled check-in:</strong></p>
-    <p><strong>Response:</strong> We should be able to get you in a bit early! We currently don't have someone staying the night before, so assuming it stays that way, a check in time of <em>whatever the requested time is, so long as it is after <strong>noon</strong></em> should work. That said, if someone books the night before you at the last minute, then we will have to give our cleaner some time to clean up the house for you 😊 Right now you're good to go for the early check-in, but we will let you know if anything changes!</p>
-    <p><strong>Action:</strong> Make a note in the "Notes" area on Hospitable/Guesty that the guest will be checking in at ____ o'clock.</p>
-
-    <p><strong>If they asked for the early check-in more than 48 hours of their scheduled check-in:</strong></p>
-    <p><strong>Response:</strong> (canned answer on Hospitable/Guesty)<br>
-    Hi, %guest first name%! Unfortunately, we cannot promise an early check-in. Our cleaning window is typically between 11:00 AM - 3:00 PM. We will have a better idea on the day of your arrival whether it's possible. If cleaning is completed early, we would be happy to update you immediately.</p>
-
-    <h3>Preceded by Booked Day</h3>
-    <p><strong>If they asked for the early check-in within 48 hours of their scheduled check-in:</strong></p>
-    <p><strong>Response:</strong> We should be able to get you in a bit early! We currently don't have someone staying the night before, so assuming it stays that way, a check in time of <em>whatever the requested time is, so long as it is after <strong>noon</strong></em> should work. That said, if someone books the night before you at the last minute, then we will have to give our cleaner some time to clean up the house for you 😊 Right now you're good to go for the early check-in, but we will let you know if anything changes!</p>
-    <p><strong>Action:</strong> Make a note in the "Notes" area on Hospitable/Guesty that the guest will be checking in at ____ o'clock.</p>
-
-    <h2>How to charge guest for late check outs</h2>
-    <ul>
-    <li>30-60 min late ⇒ $50 late fee</li>
-    <li>Every hour after the first hour ⇒ $50 per hour</li>
-    </ul>
-    <p>Do this within Airbnb resolution center<br>
-    Or make an extra request on VRBO</p>
-
-    <?php
-}
-
-
-function sop_bad_review() {
-?>
-    <h1>Bad Review SOP</h1>
-
-    <p>Send message to guest from Hospitable<br>
-    <a href="https://my.hospitable.com/inbox/segments/default">https://my.hospitable.com/inbox/segments/default</a></p>
-
-    <hr>
-
-    <h2>If guest agrees to delete review:</h2>
-    <p>Airbnb said guest can call their hotline &amp; get it removed:<br>
-    Airbnb's hotline: <a href="tel:4158005959">415 800 5959</a></p>
-
-    <hr>
-
-    <h2>What we can do is reply to their review</h2>
-    <p>Public reply to the review from Hospitable<br>
-    <a href="https://my.hospitable.com/inbox/segments/default">https://my.hospitable.com/inbox/segments/default</a></p>
-
-    <hr>
-
-    <h2>Review Form</h2>
-    <p>Use review form - can only try 2x per review</p>
-    <p><a href="https://www.airbnb.com/resolution/review_dispute/intro">https://www.airbnb.com/resolution/review_dispute/intro</a><br>
-    Request to remove a review you received - Airbnb</p>
-
-    </body>
-    </html>
-
-
-    <?php
-}
-
+ 
+ 
 
 
 // --- Helper: slugify for anchor ids ---
@@ -203,10 +114,7 @@ function lbs_render_task($task, $nested = false) {
 
 // --- Main page render callback ---
 function lbs_render_onboarding_page() {
-    if (!current_user_can('manage_options')) {
-        return;
-    }
-
+    
     global $wpdb;
 
     $allTasks = $wpdb->get_results(

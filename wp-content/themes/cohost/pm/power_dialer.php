@@ -12,7 +12,7 @@ function sales_admin_menu() {
     add_menu_page(
         'Sales Training',
         'Sales Training',
-        'manage_options',
+        'lbs_view_admin_pages',
         'sales-training',
         'sales_training_pg',
         '',
@@ -23,7 +23,7 @@ function sales_admin_menu() {
         'sales-training', //parent slug
         'Sales Calls', //menu name
         'Sales Calls', //menu name
-        'manage_options', // capability
+        'lbs_view_admin_pages', // capability
         'sales-call', // url slug
         'sales_call_pg', //callback function 
         2
@@ -34,7 +34,7 @@ function sales_admin_menu() {
         'sales-training', //parent slug
         'Power Dialer', //page name
         'Power Dialer', //menu name
-        'manage_options', // capability required for this menu to be displayed to user
+        'lbs_view_admin_pages', // capability required for this menu to be displayed to user
         'power-dialer', // url slug
         'power_dialer_pg', //callback function 
         '',
@@ -45,14 +45,14 @@ function sales_admin_menu() {
         'sales-training', //parent slug
         'Owner Statements for Clients', //page name
         'Owner Statements', //menu name
-        'manage_options', // capability required for this menu to be displayed to user
+        'lbs_view_admin_pages', // capability required for this menu to be displayed to user
         'owner-stmt', // url slug
         'owner_stmt', //callback function 
         '',
         1 //menu order
     );
  
- 
+
 }
 add_action('admin_menu', 'sales_admin_menu');
 

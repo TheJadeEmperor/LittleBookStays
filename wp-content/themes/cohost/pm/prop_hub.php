@@ -249,7 +249,14 @@ function lbs_render_table_section($heading, $sqlTable, $pkColumn, $rows, $column
     ?>
     <h2 class="ph-section-title"><?= esc_html($heading) ?></h2>
     <p class="ph-subtitle">Pulled live from <code><?= esc_html($sqlTable) ?></code>. Click a row to open it.</p>
+    <?php
+    lbs_render_table_body($sqlTable, $pkColumn, $rows, $columns, $dbError, $cellCallback, $heading);
+}
 
+// --- Render just the table/empty-state/count (no heading) — used directly
+// by Properties, which prints its own heading + view tabs above this. ---
+function lbs_render_table_body($sqlTable, $pkColumn, $rows, $columns, $dbError, $cellCallback, $heading) {
+    ?>
     <?php if ($dbError): ?>
         <div class="notice notice-error"><p>Could not load <?= esc_html($heading) ?>: <?= esc_html($dbError) ?></p></div>
     <?php elseif (empty($rows)): ?>
@@ -270,7 +277,8 @@ function lbs_render_table_section($heading, $sqlTable, $pkColumn, $rows, $column
                             <tr class="ph-row"
                                 data-table="<?= esc_attr($sqlTable) ?>"
                                 data-pk="<?= esc_attr($pkColumn) ?>"
-                                data-pk-value="<?= esc_attr($row[$pkColumn]) ?>">
+                                data-pk-value="<?= esc_attr($row[$pkColumn]) ?>"
+                                <?php if (isset($row['status'])): ?>data-status="<?= esc_attr($row['status']) ?>"<?php endif; ?>>
                                 <?php foreach ($columns as $col): ?>
                                     <?php call_user_func($cellCallback, $row, $col); ?>
                                 <?php endforeach; ?>
@@ -280,7 +288,7 @@ function lbs_render_table_section($heading, $sqlTable, $pkColumn, $rows, $column
                 </table>
             </div>
         </div>
-        <div class="ph-count"><?= count($rows) ?> <?= count($rows) === 1 ? 'row' : 'rows' ?></div>
+        <div class="ph-count" data-count-for="<?= esc_attr($sqlTable) ?>"><?= count($rows) ?> <?= count($rows) === 1 ? 'row' : 'rows' ?></div>
     <?php endif;
 }
 
@@ -318,8 +326,21 @@ function lbs_render_prop_hub_page() {
             <a class="button" href="<?= esc_url(admin_url('admin.php?page=lbs-onboarding')) ?>">Onboarding checklist</a>
         </div>
 
+        <div id="ph-properties-section">
+            <h2 class="ph-section-title">Properties</h2>
+            <p class="ph-subtitle">Pulled live from <code>pm_prop_hub</code>. Click a row to open it.</p>
+
+            <div class="ph-tabs" id="ph-properties-tabs">
+                <button type="button" class="ph-tab ph-tab-active" data-filter="all">Default</button>
+                <button type="button" class="ph-tab" data-filter="cancelled">Cancelled</button>
+            </div>
+
+            <?php
+            lbs_render_table_body('pm_prop_hub', 'num', $propData['rows'], $tables['pm_prop_hub']['columns'], $propData['error'], 'lbs_render_prop_cell', 'Properties');
+            ?>
+        </div>
+
         <?php
-        lbs_render_table_section('Properties', 'pm_prop_hub', 'num', $propData['rows'], $tables['pm_prop_hub']['columns'], $propData['error'], 'lbs_render_prop_cell');
         lbs_render_table_section('Cleaners', 'pm_cleaners', 'id', $cleanerData['rows'], $tables['pm_cleaners']['columns'], $cleanerData['error'], 'lbs_render_generic_cell');
         lbs_render_table_section('Contractors', 'pm_contractors', 'id', $contractorData['rows'], $tables['pm_contractors']['columns'], $contractorData['error'], 'lbs_render_generic_cell');
         ?>
@@ -502,6 +523,32 @@ function lbs_render_prop_hub_page() {
             color: #9B9A97;
             font-size: 12px;
             margin-top: 10px;
+        }
+
+        /* View tabs (Properties: Default / Cancelled) */
+        .ph-tabs {
+            display: flex;
+            gap: 4px;
+            border-bottom: 1px solid #E9E9E7;
+            margin-bottom: 16px;
+        }
+        .ph-tab {
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            padding: 8px 4px;
+            margin-right: 18px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #9B9A97;
+            cursor: pointer;
+        }
+        .ph-tab:hover {
+            color: #37352F;
+        }
+        .ph-tab.ph-tab-active {
+            color: #37352F;
+            border-bottom-color: #37352F;
         }
 
         /* Status dropdown, Notion-style */
@@ -1109,6 +1156,34 @@ function lbs_render_prop_hub_page() {
             tr.addEventListener('click', function (e) {
                 if (e.target.closest('a, button, .ph-status-wrap')) return;
                 openPanel(tr);
+            });
+        });
+
+        // --- Properties view tabs: Default (all) / Cancelled (status 0) ---
+        const propTabs = document.querySelectorAll('#ph-properties-tabs .ph-tab');
+        const propSection = document.getElementById('ph-properties-section');
+        const propCount = propSection ? propSection.querySelector('.ph-count[data-count-for="pm_prop_hub"]') : null;
+
+        propTabs.forEach(function (tab) {
+            tab.addEventListener('click', function () {
+                propTabs.forEach(function (t) { t.classList.remove('ph-tab-active'); });
+                tab.classList.add('ph-tab-active');
+
+                const filter = tab.dataset.filter;
+                const rows = propSection.querySelectorAll('.ph-row');
+                let visible = 0;
+
+                rows.forEach(function (tr) {
+                    const isCancelled = tr.dataset.status === '0';
+                    const show = filter === 'all' ? true : isCancelled;
+                    tr.style.display = show ? '' : 'none';
+                    if (show) visible++;
+                });
+
+                if (propCount) {
+                    propCount.textContent = visible + (visible === 1 ? ' row' : ' rows')
+                        + (filter === 'cancelled' ? ' (cancelled)' : '');
+                }
             });
         });
     })();
