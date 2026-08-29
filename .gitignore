@@ -1,5 +1,9 @@
+
+# config files
 wp-config.php
 wp-config-sample.php
+wp-content/themes/cohost/close/apiKey.php
+
 index.php
 license.txt
 readme.html
@@ -15,7 +19,6 @@ wp-settings.php
 wp-signup.php
 wp-trackback.php
 xmlrpc.php
-
 wp-content/uploads/
 wp-content/plugins/
 vendor/

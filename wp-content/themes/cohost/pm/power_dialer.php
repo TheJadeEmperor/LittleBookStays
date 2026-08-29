@@ -19,6 +19,19 @@ function sales_admin_menu() {
         2
     );
 
+    
+     add_submenu_page(   
+        'sales-training', //parent slug
+        'Systems Training', //page name
+        'Systems Training', //menu name
+        'lbs_view_admin_pages', // capability required for this menu to be displayed to user
+        'systems-training', // url slug
+        'systems_training_pg', //callback function 
+        '',
+        1 //menu order
+    );
+
+
     add_submenu_page(
         'sales-training', //parent slug
         'Sales Calls', //menu name
@@ -26,19 +39,7 @@ function sales_admin_menu() {
         'lbs_view_admin_pages', // capability
         'sales-call', // url slug
         'sales_call_pg', //callback function 
-        2
-    );
-
-
-     add_submenu_page(   
-        'sales-training', //parent slug
-        'Power Dialer', //page name
-        'Power Dialer', //menu name
-        'lbs_view_admin_pages', // capability required for this menu to be displayed to user
-        'power-dialer', // url slug
-        'power_dialer_pg', //callback function 
-        '',
-        1 //menu order
+        3
     );
 
    
@@ -54,8 +55,16 @@ function sales_training_pg() {
     ?>
 
     <div class="wrap">
-        <h1>Training Vids & Guides</h1>
+        
+        <h1>Power Dialer</h1>
+        <p>Welcome to our power dialer position. Below you will find our scripts and trainings </p>
 
+
+        <p>For more info on the Power Dialer position, please go to our notion page:</p>
+
+         <p><a target="_BLANK" href="https://habitual-airbus-6d2.notion.site/Power-Dialer-Position-129e540782c18036b209e91e56c3ca5a?pvs=74">https://habitual-airbus-6d2.notion.site/Power-Dialer-Position-129e540782c18036b209e91e56c3ca5a?pvs=74</a></p>
+
+        <p>To see all sales videos, go to google drive</p>
         <p><a target="_BLANK" href="https://drive.google.com/drive/folders/1bqj6vWUCHvW9Wk5KSSCcWHB0NK7BFCQH?usp=drive_link
         ">https://drive.google.com/drive/folders/1bqj6vWUCHvW9Wk5KSSCcWHB0NK7BFCQH?usp=drive_link
         </a></p>
@@ -111,14 +120,15 @@ function sales_training_pg() {
 function sales_call_pg () {
 
     $salesCall = array(
+       '14/6/4.5 | R Beach, DE | Mike McCormick' => array(
+            'transcript' => 'https://drive.google.com/drive/folders/14LBXpXG-FqfxNjAu3z5t7GWrSFUZO9Ox?usp=drive_link',
+            'embedCode' => '<iframe width="560" height="315" src="https://www.youtube.com/embed/mjRm3vOO0gU?si=UyOBeZfT3N03ZOMY" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>'
+        ),
         '4/2/1 | Brigantine, NJ | Shelly Lappi' => array(
             'transcript' => 'https://docs.google.com/document/d/1PnhKxcJ2P9hmN_V6InCzxP4zq_2GX9dF/edit?usp=drive_link&ouid=116706145687298652824&rtpof=true&sd=true',
             'embedCode' => '<iframe width="560" height="315" src="https://www.youtube.com/embed/E_xwGB_gw8U?si=l2aexyYcCo32gIQ1" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>'
         ),
-        '14/6/4.5 | R Beach, DE | Mike McCormick' => array(
-            'transcript' => 'https://drive.google.com/drive/folders/14LBXpXG-FqfxNjAu3z5t7GWrSFUZO9Ox?usp=drive_link',
-            'embedCode' => '<iframe width="560" height="315" src="https://www.youtube.com/embed/mjRm3vOO0gU?si=UyOBeZfT3N03ZOMY" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>'
-        ),
+        
         '8/4/2.5 | Tobyhanna, PA | Rosemary' => array(
             'transcript' => 'https://drive.google.com/drive/folders/1EKcNfrhrzY5zAxtwHJ6L_Y7Sbr6G2zJ9?usp=drive_link',
             'embedCode' => ' <iframe src="https://drive.google.com/file/d/1YItdTMEqdMTmyi_EYk-LaO8fPfEZ9f3b/preview" width="640" height="480" allow="autoplay"></iframe>        '
@@ -171,18 +181,23 @@ function sales_call_pg () {
 
         ?>
      
-</div>
+    </div>
 
-<?php
+    <?php
 }
 
-function power_dialer_pg() {
+function systems_training_pg() {
     ?>
 
-<div class="wrap">
-    <h1>Power Dialer</h1>
+    <div class="wrap">
+    <h1>Systems Training</h1>
 
-    <p>Welcome to our power dialer position. Below you will find our scripts and trainings </p>
+    
+    <p>For more info on the Power Dialer position, please go to our notion page:</p>
+
+    <p><a target="_BLANK" href="https://habitual-airbus-6d2.notion.site/Power-Dialer-Position-129e540782c18036b209e91e56c3ca5a?pvs=74">https://habitual-airbus-6d2.notion.site/Power-Dialer-Position-129e540782c18036b209e91e56c3ca5a?pvs=74</a></p>
+
+
 
     <p>Cold Call Scripts</p>
 

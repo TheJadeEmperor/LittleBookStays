@@ -30,7 +30,7 @@ function lbs_add_owner_statement_page() {
         'lbs-owner-statement',
         'lbs_render_owner_statement_page',
         'dashicons-media-spreadsheet',
-        6
+        4
     );
 }
 
