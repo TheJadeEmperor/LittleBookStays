@@ -28,14 +28,14 @@
 										
 										<span class="icon solid alt fa-envelope"></span>
 										<h3>Email</h3>
-										<a href="mailto:<?=$adminEmail?>"><?=$adminEmail?></a>
+										<a href="mailto:<?= esc_attr(get_option('lbs_email')) ?>"><?= esc_attr(get_option('lbs_email')) ?></a>
 									</div>
 								</section>
 								<section>
 									<div class="contact-method">
 										<span class="icon solid alt fa-phone"></span>
 										<h3>Phone</h3> 
-										<span>920-697-6889</span>
+										<span><?= esc_attr(get_option('lbs_phone')) ?></span>
 									</div>
 								</section>
 								<section> 
@@ -58,7 +58,7 @@
 								
 								<li><a target="_BLANK" href="./blog/" class="icon brands alt fa-blogger" ><span class="label">Blog</span></a></li>
 							
-								<li><a target="_BLANK" href="tel:1-920-697-ss6889" class="icon solid alt fa-phone"><span class="label">Phone</span></a></li> 
+								<li><a target="_BLANK" href="tel:<?= esc_attr(get_option('lbs_phone')) ?>" class="icon solid alt fa-phone"><span class="label">Phone</span></a></li> 
 							</ul> 
        
 							<ul class="icons">

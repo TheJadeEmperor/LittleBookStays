@@ -41,51 +41,12 @@ function sales_admin_menu() {
         1 //menu order
     );
 
-    add_submenu_page(   
-        'sales-training', //parent slug
-        'Owner Statements for Clients', //page name
-        'Owner Statements', //menu name
-        'lbs_view_admin_pages', // capability required for this menu to be displayed to user
-        'owner-stmt', // url slug
-        'owner_stmt', //callback function 
-        '',
-        1 //menu order
-    );
+   
  
 
 }
 add_action('admin_menu', 'sales_admin_menu');
 
-
-
-function owner_stmt () {
-    ?>
-
-    <h1>Example Owner Statement</h1>
-    <p><a href="https://drive.google.com/drive/folders/16iPNF0a_vttToYR5YfBk5WB40BwZDsGk?usp=sharing">https://drive.google.com/drive/folders/16iPNF0a_vttToYR5YfBk5WB40BwZDsGk?usp=sharing</a></p>
-
-    <hr> <p>&nbsp;</p>
-
-    <h2><strong>Instructions - do once a month</strong></h2>
-    <ol>
-    <li><p>For supplies, look at invoices for the month &amp; add their totals into the supplies section</p></li>
-   
-    <li><p>For cohost &amp; owner payouts, go to Hospitable calendar and see the RSVP Fee</p>
-         
-        <p>Cleaning fee is also listed on calendar - keep it the same as always unless if your host tells you otherwises<p>
-        <p>Only add VRBO payments & others platforms - not Airbnb<p>
-        <p>Put the RSVP Date, RSVP Name &amp; stay fee into the XLS and it will calculate the cohost payout &amp; owner payout<br>
-        <a href="https://docs.google.com/spreadsheets/d/1Q3B047KCA122xPQ3P4bs79O35UESc-Bs/edit?gid=1316093940#gid=1316093940">https://docs.google.com/spreadsheets/d/1Q3B047KCA122xPQ3P4bs79O35UESc-Bs/edit?gid=1316093940#gid=1316093940</a></p>
-        <p>Ignore the adjustment column</p>
-         
-    </li>
-     <li><p>For insurance claims, look at the insurance claims for the month</p></li>
-      <li><p>IF there are any guest refunds, it will show in Hospitable</p></li>
-    </ol>
-
-
-    <?php 
-}
  
 
 function sales_training_pg() {

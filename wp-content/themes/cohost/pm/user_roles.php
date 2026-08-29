@@ -86,4 +86,6 @@ function lbs_remove_default_roles() {
     remove_role('contributor');
     remove_role('editor');
     remove_role('subscriber');
+    remove_role('seo_manager');
+    remove_role('seo_editor');
 }

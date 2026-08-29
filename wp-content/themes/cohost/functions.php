@@ -1,6 +1,5 @@
 <?php
-
-
+require_once get_stylesheet_directory() . '/pm/generate_statement.php';
 require_once get_stylesheet_directory() . '/pm/prop_hub.php';
 require_once get_stylesheet_directory() . '/pm/power_dialer.php';
 require_once get_stylesheet_directory() . '/pm/user_roles.php';
@@ -13,11 +12,70 @@ function lbs_hide_update_nag() {
     echo '<style>.update-nag{display:none !important;}</style>';
 }
 
+
+// --- Register settings page ---
+add_action('admin_menu', 'lbs_add_settings_page');
+
+function lbs_add_settings_page() {
+    add_options_page(
+        'LBS Settings',
+        'LBS Settings',
+        'manage_options',
+        'lbs-settings',
+        'lbs_render_settings_page'
+    );
+}
+
+// --- Register the option fields ---
+add_action('admin_init', 'lbs_register_settings');
+
+function lbs_register_settings() {
+    register_setting('lbs_settings_group', 'lbs_phone', ['sanitize_callback' => 'sanitize_text_field']);
+    register_setting('lbs_settings_group', 'lbs_calendly', ['sanitize_callback' => 'sanitize_text_field']);
+    register_setting('lbs_settings_group', 'lbs_email', ['sanitize_callback' => 'sanitize_email']);
+}
+
+// --- Render the page ---
+function lbs_render_settings_page() {
+    if (!current_user_can('manage_options')) {
+        return;
+    }
+    ?>
+    <div class="wrap">
+        <h1>LBS Settings</h1>
+        <form method="post" action="options.php">
+            <?php settings_fields('lbs_settings_group'); ?>
+            <table class="form-table">
+                <tr>
+                    <th><label for="lbs_phone">Phone</label></th>
+                    <td><input type="text" id="lbs_phone" name="lbs_phone"
+                        value="<?= esc_attr(get_option('lbs_phone')) ?>" class="regular-text"></td>
+                </tr>
+                <tr>
+                    <th><label for="lbs_email">Email</label></th>
+                    <td><input type="email" id="lbs_email" name="lbs_email"
+                        value="<?= esc_attr(get_option('lbs_email')) ?>" class="regular-text"></td>
+                </tr>
+                <tr>
+                    <th><label for="lbs_calendly">Calendly URL</label></th>
+                    <td><input type="text" id="lbs_calendly" name="lbs_calendly"
+                        value="<?= esc_attr(get_option('lbs_calendly')) ?>" class="regular-text"></td>
+                </tr>
+            </table>
+            <?php submit_button(); ?>
+        </form>
+    </div>
+    <?php
+}
+
+
+
 // ============================================================
 // Onboarding Checklist — WordPress admin page version
 // Uses $wpdb since onboarding_tasks lives in the same DB as WordPress
 // Add this to functions.php in the cohost theme
 // ============================================================
+//How would you use a custom settings table for variables, for example, a phone number that I can put in the admin page and I can use it anywhere? 
 
 
 
@@ -67,6 +125,32 @@ function lbs_sop_page () {
     <p>Notion - <a target="_BLANK" href="https://habitual-airbus-6d2.notion.site/Disasters-Unhappy-Guest-2f1e540782c180418a8dec9a9faeff13">Unhappy Guests</a></p>
 
     <p>Notion - <a target="_BLANK" href="https://habitual-airbus-6d2.notion.site/General-SOP-3c6e540782c1807e8574fa0cf8b66d92">General SOP</a></p>
+
+    <hr> <p>&nbsp;</p>
+
+    <h1>Owner Statements</h1>
+
+    <p><a target="_BLANK" href="https://drive.google.com/drive/folders/16iPNF0a_vttToYR5YfBk5WB40BwZDsGk?usp=sharing">https://drive.google.com/drive/folders/16iPNF0a_vttToYR5YfBk5WB40BwZDsGk?usp=sharing</a></p>
+
+    
+
+    <h2><strong>Instructions - do once a month</strong></h2>
+    <ol>
+    <li><p>For supplies, look at invoices for the month &amp; add their totals into the supplies section</p></li>
+   
+    <li><p>For cohost &amp; owner payouts, go to Hospitable calendar and see the RSVP Fee</p>
+         
+        <p>Cleaning fee is also listed on calendar - keep it the same as always unless if your host tells you otherwises<p>
+        <p>Only add VRBO payments & others platforms - not Airbnb<p>
+        <p>Put the RSVP Date, RSVP Name &amp; stay fee into the XLS and it will calculate the cohost payout &amp; owner payout<br>
+        <a  target="_BLANK"  href="https://docs.google.com/spreadsheets/d/1Q3B047KCA122xPQ3P4bs79O35UESc-Bs/edit?gid=1316093940#gid=1316093940">https://docs.google.com/spreadsheets/d/1Q3B047KCA122xPQ3P4bs79O35UESc-Bs/edit?gid=1316093940#gid=1316093940</a></p>
+        <p>Ignore the adjustment column</p>
+         
+    </li>
+     <li><p>For insurance claims, look at the insurance claims for the month</p></li>
+      <li><p>IF there are any guest refunds, it will show in Hospitable</p></li>
+    </ol>
+    
 
 
     <?php
