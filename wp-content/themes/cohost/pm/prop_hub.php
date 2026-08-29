@@ -4,22 +4,20 @@
 // LBS
 // ============================================================
 
-// --- DB credentials for the pm_* tables ---
-// NOTE: the SQL dumps for pm_prop_hub / pm_cleaners / pm_contractors are
-// all under database `rentals`, not `props` (where onboarding_tasks
-// lives). Adjust DB_NAME below if your local WAMP setup differs.
+// --- DB connection for the pm_* tables ---
+// Uses WordPress's own database connection info ($wpdb->dbhost/dbname/
+// dbuser/dbpassword — the exact credentials wp-config.php already
+// connects with) instead of a separate hardcoded connection, so this
+// always points at whatever database WordPress itself is using.
 function lbs_prop_hub_db() {
     static $pdo = null;
     if ($pdo === null) {
-        $DB_HOST = 'localhost';
-        $DB_NAME = 'rentals';
-        $DB_USER = 'root';
-        $DB_PASS = 'password';
+        global $wpdb;
 
         $pdo = new PDO(
-            "mysql:host={$DB_HOST};dbname={$DB_NAME};charset=utf8mb4",
-            $DB_USER,
-            $DB_PASS,
+            "mysql:host={$wpdb->dbhost};dbname={$wpdb->dbname};charset=utf8mb4",
+            $wpdb->dbuser,
+            $wpdb->dbpassword,
             [
                 PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
