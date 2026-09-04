@@ -4,6 +4,170 @@ require_once get_stylesheet_directory() . '/pm/prop_hub.php';
 require_once get_stylesheet_directory() . '/pm/power_dialer.php';
 require_once get_stylesheet_directory() . '/pm/user_roles.php';
 
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Close CRM — Lead Lookup admin page
+// ─────────────────────────────────────────────────────────────────────────────
+
+add_action('admin_menu', 'close_crm_add_lead_lookup_page');
+
+function close_crm_add_lead_lookup_page() {
+    add_menu_page(
+        'Close CRM Lead Lookup',   // Page title
+        'Close Sales Advise',          // Menu title
+        'manage_options',          // Capability required
+        'close-crm-lead-lookup',   // Menu slug
+        'close_crm_render_lead_lookup_page',
+        'dashicons-id',
+        3
+    );
+}
+
+function close_crm_render_lead_lookup_page() {
+
+    // Only allow users who can manage the site
+    if (!current_user_can('manage_options')) {
+        wp_die('You do not have permission to access this page.');
+    }
+
+    $leadId = '';
+    $output = '';
+    $error  = '';
+    $advice = '';
+    $adviceError = '';
+
+    // Handle form submission
+    if (isset($_POST['close_lead_id']) && check_admin_referer('close_lead_lookup_action', 'close_lead_lookup_nonce')) {
+
+        $leadId = sanitize_text_field(trim($_POST['close_lead_id']));
+
+        if (empty($leadId)) {
+            $error = 'Please enter a Lead ID.';
+        } else {
+            // Tell export.php not to run its standalone download behavior
+            define('CLOSE_ADMIN_INCLUDE', true);
+
+            $exportFile = get_template_directory() . '/close/export.php';
+            $advisorFile = get_template_directory() . '/close/geminiAdvisor.php';
+
+            if (!file_exists($exportFile)) {
+                $error = 'export.php not found at: ' . $exportFile;
+            } else {
+                require_once $exportFile;
+
+                try {
+                    $output = CloseLeadExporter::getFormattedExport($leadId);
+                } catch (\Exception $e) {
+                    $error = 'Error fetching lead: ' . $e->getMessage();
+                }
+
+                // Pull the lead's display name once (used for both the AI prompt
+                // and the downloaded filename). Non-fatal if it fails.
+                $leadDisplayName = $leadId;
+                if ($output) {
+                    try {
+                        $tmpClient = new CloseApiClient(CLOSE_API_KEY);
+                        $tmpLead   = $tmpClient->getLead($leadId);
+                        $leadDisplayName = $tmpLead['display_name'] ?? $leadId;
+                    } catch (\Exception $e) {
+                        // Non-fatal — fall back to using the raw lead ID as the name
+                    }
+                }
+
+                // Only ask Gemini for advice if we actually got a transcript back
+                if ($output && file_exists($advisorFile)) {
+                    require_once $advisorFile;
+
+                    try {
+                        $advice = GeminiSalesAdvisor::getAdvice($leadDisplayName, $output);
+                    } catch (\Exception $e) {
+                        $adviceError = 'Error getting sales advice: ' . $e->getMessage();
+                    }
+                } elseif ($output && !file_exists($advisorFile)) {
+                    $adviceError = 'geminiAdvisor.php not found at: ' . $advisorFile;
+                }
+            }
+        }
+    }
+
+    ?>
+    <div class="wrap">
+        <h1>Close CRM — Lead Lookup</h1>
+
+        <form method="post" action="">
+            <?php wp_nonce_field('close_lead_lookup_action', 'close_lead_lookup_nonce'); ?>
+            <table class="form-table">
+                <tr>
+                    <th scope="row"><label for="close_lead_id">Lead ID</label></th>
+                    <td>
+                        <input
+                            type="text"
+                            id="close_lead_id"
+                            name="close_lead_id"
+                            value="<?php echo esc_attr($leadId); ?>"
+                            class="regular-text"
+                            placeholder="lead_xxxxxxxxxxxxx"
+                        />
+                    </td>
+                </tr>
+            </table>
+            <?php submit_button('Look Up Lead'); ?>
+        </form>
+
+        <?php if ($error): ?>
+            <div class="notice notice-error">
+                <p><?php echo esc_html($error); ?></p>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($advice): ?>
+            <h2>🤖 Sales Advice (Gemini)</h2>
+            <div style="background:#fff; border:1px solid #ccd0d4; border-left:4px solid #34a853; padding:16px 20px; max-width:900px; white-space:pre-wrap; font-size:14px; line-height:1.6;"><?php echo esc_html($advice); ?></div>
+        <?php endif; ?>
+
+        <?php if ($adviceError): ?>
+            <div class="notice notice-warning">
+                <p><?php echo esc_html($adviceError); ?></p>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($output): ?>
+            <h2>Client Information</h2>
+            <p>
+                <button type="button" id="close-download-btn" class="button button-secondary">⬇ Download as .txt</button>
+            </p>
+            <textarea readonly rows="30" id="close-transcript-textarea" style="width:100%; max-width:1100px; box-sizing:border-box; background:#fff; border:1px solid #ccd0d4; padding:16px; font-family:Consolas, Menlo, monospace; font-size:13px; line-height:1.5; white-space:pre; overflow:auto; resize:vertical;"><?php echo esc_textarea($output); ?></textarea>
+
+            <script>
+            (function () {
+                var btn = document.getElementById('close-download-btn');
+                if (!btn) return;
+
+                btn.addEventListener('click', function () {
+                    var textarea = document.getElementById('close-transcript-textarea');
+                    var text = textarea.value;
+                    var filename = <?php echo wp_json_encode(preg_replace('/[^a-z0-9_\-]/i', '_', $leadDisplayName) . '_export.txt'); ?>;
+
+                    var blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+                    var url  = URL.createObjectURL(blob);
+
+                    var a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                });
+            })();
+            </script>
+        <?php endif; ?>
+    </div>
+    <?php
+}
+
+
+
 // --- Hide the "WordPress X.X is available! Please update now." admin nag ---
 // Note: this only hides the visual notice, it does not stop WP from
 // checking for or installing updates. The site is still on the old version.

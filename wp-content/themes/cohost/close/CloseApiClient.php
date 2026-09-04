@@ -247,9 +247,14 @@ class CloseApiClient
 
 // =============================================================================
 // CONNECTION TEST
-// Runs when you open this file in a browser OR execute: php CloseApiClient.php
+// Only runs when this file is opened directly in a browser or via CLI —
+// NOT when it's require()'d by export.php or another script (e.g. from
+// the WordPress admin page).
 // =============================================================================
 
+$closeApiClientIsIncluded = realpath($_SERVER['SCRIPT_FILENAME'] ?? '') !== __FILE__;
+
+if (!$closeApiClientIsIncluded) {
 try {
     $client = new CloseApiClient(CLOSE_API_KEY);
 
@@ -305,3 +310,4 @@ try {
     }
     exit(1);
 }
+} // end $closeApiClientIsIncluded guard
