@@ -121,7 +121,7 @@ function lbs_contractors_columns() {
         ['key' => 'id',      'label' => 'ID',        'type' => 'num'],
         ['key' => 'name',    'label' => 'Contractor','type' => 'title'],
         ['key' => 'title',   'label' => 'Trade',     'type' => 'text'],
-        ['key' => 'prop_id', 'label' => 'Property #','type' => 'num'],
+        ['label' => 'Property #','type' => 'num'],
         ['key' => 'phone',   'label' => 'Phone',     'type' => 'text'],
         ['key' => 'address', 'label' => 'Address',   'type' => 'text'],
         ['key' => 'payment', 'label' => 'Payment',   'type' => 'text'],
@@ -329,7 +329,7 @@ function lbs_render_prop_hub_page() {
             <p class="ph-subtitle">Pulled live from <code>pm_prop_hub</code>. Click a row to open it.</p>
 
             <div class="ph-tabs" id="ph-properties-tabs">
-                <button type="button" class="ph-tab ph-tab-active" data-filter="all">Default</button>
+                <button type="button" class="ph-tab ph-tab-active" data-filter="active">Active</button>
                 <button type="button" class="ph-tab" data-filter="cancelled">Cancelled</button>
             </div>
 
@@ -1157,33 +1157,42 @@ function lbs_render_prop_hub_page() {
             });
         });
 
-        // --- Properties view tabs: Default (all) / Cancelled (status 0) ---
+        // --- Properties view tabs: Active (status != 0) / Cancelled (status == 0) ---
         const propTabs = document.querySelectorAll('#ph-properties-tabs .ph-tab');
         const propSection = document.getElementById('ph-properties-section');
         const propCount = propSection ? propSection.querySelector('.ph-count[data-count-for="pm_prop_hub"]') : null;
+
+        function applyPropFilter(filter) {
+            const rows = propSection.querySelectorAll('.ph-row');
+            let visible = 0;
+
+            rows.forEach(function (tr) {
+                const isCancelled = tr.dataset.status === '0';
+                const show = filter === 'active' ? !isCancelled : isCancelled;
+                tr.style.display = show ? '' : 'none';
+                if (show) visible++;
+            });
+
+            if (propCount) {
+                propCount.textContent = visible + (visible === 1 ? ' row' : ' rows')
+                    + (filter === 'cancelled' ? ' (cancelled)' : '');
+            }
+        }
 
         propTabs.forEach(function (tab) {
             tab.addEventListener('click', function () {
                 propTabs.forEach(function (t) { t.classList.remove('ph-tab-active'); });
                 tab.classList.add('ph-tab-active');
-
-                const filter = tab.dataset.filter;
-                const rows = propSection.querySelectorAll('.ph-row');
-                let visible = 0;
-
-                rows.forEach(function (tr) {
-                    const isCancelled = tr.dataset.status === '0';
-                    const show = filter === 'all' ? true : isCancelled;
-                    tr.style.display = show ? '' : 'none';
-                    if (show) visible++;
-                });
-
-                if (propCount) {
-                    propCount.textContent = visible + (visible === 1 ? ' row' : ' rows')
-                        + (filter === 'cancelled' ? ' (cancelled)' : '');
-                }
+                applyPropFilter(tab.dataset.filter);
             });
         });
+
+        // Apply the default tab's filter immediately on load, since the PHP
+        // renders all rows unfiltered.
+        if (propSection) {
+            const activeTab = propSection.querySelector('.ph-tab.ph-tab-active');
+            applyPropFilter(activeTab ? activeTab.dataset.filter : 'active');
+        }
     })();
     </script>
     <?php

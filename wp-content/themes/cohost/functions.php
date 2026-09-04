@@ -48,7 +48,7 @@ function close_crm_render_lead_lookup_page() {
             define('CLOSE_ADMIN_INCLUDE', true);
 
             $exportFile = get_template_directory() . '/close/export.php';
-            $advisorFile = get_template_directory() . '/close/geminiAdvisor.php';
+           // $advisorFile = get_template_directory() . '/close/geminiAdvisor.php';
 
             if (!file_exists($exportFile)) {
                 $error = 'export.php not found at: ' . $exportFile;
@@ -73,19 +73,7 @@ function close_crm_render_lead_lookup_page() {
                         // Non-fatal — fall back to using the raw lead ID as the name
                     }
                 }
-
-                // Only ask Gemini for advice if we actually got a transcript back
-                if ($output && file_exists($advisorFile)) {
-                    require_once $advisorFile;
-
-                    try {
-                        $advice = GeminiSalesAdvisor::getAdvice($leadDisplayName, $output);
-                    } catch (\Exception $e) {
-                        $adviceError = 'Error getting sales advice: ' . $e->getMessage();
-                    }
-                } elseif ($output && !file_exists($advisorFile)) {
-                    $adviceError = 'geminiAdvisor.php not found at: ' . $advisorFile;
-                }
+ 
             }
         }
     }
@@ -120,17 +108,8 @@ function close_crm_render_lead_lookup_page() {
             </div>
         <?php endif; ?>
 
-        <?php if ($advice): ?>
-            <h2>🤖 Sales Advice (Gemini)</h2>
-            <div style="background:#fff; border:1px solid #ccd0d4; border-left:4px solid #34a853; padding:16px 20px; max-width:900px; white-space:pre-wrap; font-size:14px; line-height:1.6;"><?php echo esc_html($advice); ?></div>
-        <?php endif; ?>
-
-        <?php if ($adviceError): ?>
-            <div class="notice notice-warning">
-                <p><?php echo esc_html($adviceError); ?></p>
-            </div>
-        <?php endif; ?>
-
+      
+ 
         <?php if ($output): ?>
             <h2>Client Information</h2>
             <p>
