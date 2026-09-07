@@ -4,6 +4,11 @@ require_once get_stylesheet_directory() . '/pm/prop_hub.php';
 require_once get_stylesheet_directory() . '/pm/power_dialer.php';
 require_once get_stylesheet_directory() . '/pm/user_roles.php';
 
+ 
+//echo get_template_directory_uri() . '/style.css';
+wp_enqueue_style('parent-style', get_template_directory_uri() . '/style.css');
+
+ 
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Close CRM — Lead Lookup admin page

@@ -367,3 +367,196 @@
 .ph-panel-value .ph-status-wrap {
     display: block;
 }
+
+
+
+    .ph-relations-value {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .ph-relations-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+    .ph-relations-loading {
+        color: #9B9A97;
+        font-size: 13px;
+        font-style: italic;
+    }
+    .ph-link-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #F1F1EF;
+        border-radius: 4px;
+        padding: 3px 6px 3px 9px;
+        font-size: 12px;
+        color: #37352F;
+    }
+    .ph-link-chip-name {
+        font-weight: 500;
+    }
+    .ph-link-chip-role {
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        padding: 1px 5px;
+        border-radius: 3px;
+    }
+    .ph-link-chip-role-main {
+        background: #DDF3E4;
+        color: #0F7B6C;
+    }
+    .ph-link-chip-role-backup {
+        background: #FDECC8;
+        color: #97701D;
+    }
+    .ph-link-chip-turnover {
+        color: #9B9A97;
+    }
+    .ph-link-chip-remove {
+        background: none;
+        border: none;
+        color: #9B9A97;
+        font-size: 14px;
+        line-height: 1;
+        cursor: pointer;
+        padding: 0 2px;
+        border-radius: 3px;
+    }
+    .ph-link-chip-remove:hover {
+        background: #E3E2E0;
+        color: #37352F;
+    }
+    .ph-relations-add {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+    }
+    .ph-relations-select {
+        font-size: 12px;
+        padding: 3px 6px;
+        border: 1px solid #D9D9D6;
+        border-radius: 4px;
+        max-width: 220px;
+    }
+    .ph-relations-add-btn {
+        font-size: 12px !important;
+        padding: 2px 10px !important;
+        height: auto !important;
+        line-height: 1.6 !important;
+    }
+
+/* ============================================================
+   Property Hub additions — paste into theme style.css
+   (Everything below supports prop_hub.php; nothing lives inline
+   in that file anymore.)
+   ============================================================ */
+
+/* --- Wider panel + two-column field layout ---
+   If .ph-panel already has a width rule earlier in style.css, this
+   later rule wins on the cascade and overrides it. Move it after
+   your existing .ph-panel rule if it doesn't seem to take effect. */
+.ph-panel {
+    width: 760px;
+    max-width: 94vw;
+}
+
+.ph-panel-columns {
+    display: flex;
+    gap: 28px;
+}
+.ph-panel-col {
+    flex: 1;
+    min-width: 0;
+}
+
+/* --- Lock background scroll while the panel is open, so there's
+   only one scrollbar (the panel's own) instead of two. --- */
+body.ph-body-panel-open {
+    overflow: hidden;
+}
+
+/* --- Relation chips (Cleaners <-> Properties link) --- */
+.ph-relations-value {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.ph-relations-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.ph-relations-loading {
+    color: #9B9A97;
+    font-size: 13px;
+    font-style: italic;
+}
+.ph-link-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #F1F1EF;
+    border-radius: 4px;
+    padding: 3px 6px 3px 9px;
+    font-size: 12px;
+    color: #37352F;
+}
+.ph-link-chip-name {
+    font-weight: 500;
+}
+.ph-link-chip-role {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 1px 5px;
+    border-radius: 3px;
+}
+.ph-link-chip-role-main {
+    background: #DDF3E4;
+    color: #0F7B6C;
+}
+.ph-link-chip-role-backup {
+    background: #FDECC8;
+    color: #97701D;
+}
+.ph-link-chip-turnover {
+    color: #9B9A97;
+}
+.ph-link-chip-remove {
+    background: none;
+    border: none;
+    color: #9B9A97;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 2px;
+    border-radius: 3px;
+}
+.ph-link-chip-remove:hover {
+    background: #E3E2E0;
+    color: #37352F;
+}
+.ph-relations-add {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+.ph-relations-select {
+    font-size: 12px;
+    padding: 3px 6px;
+    border: 1px solid #D9D9D6;
+    border-radius: 4px;
+    max-width: 220px;
+}
+.ph-relations-add-btn {
+    font-size: 12px !important;
+    padding: 2px 10px !important;
+    height: auto !important;
+    line-height: 1.6 !important;
+}

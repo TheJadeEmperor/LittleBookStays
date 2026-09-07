@@ -350,6 +350,13 @@ function lbs_render_prop_hub_page() {
         return ['id' => (int) $r['num'], 'name' => $r['name']];
     }, $propData['rows']);
 
+    // Panel layout: for tables with a lot of fields, split into two
+    // columns after the given field key (everything after it, including
+    // panel-only extras and the relations field, flows into column 2).
+    $panelColumnBreaks = [
+        'pm_prop_hub' => 'hostco',
+    ];
+
     // Panel field config + status palette, handed to JS so the sidebar
     // panel (and the re-render after a save) share the exact same rules
     // as the PHP cell renderers above.
@@ -402,88 +409,6 @@ function lbs_render_prop_hub_page() {
         <div class="ph-panel-body" id="ph-panel-body"></div>
     </aside>
 
-<style>
-    .ph-relations-value {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-    .ph-relations-chips {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-    }
-    .ph-relations-loading {
-        color: #9B9A97;
-        font-size: 13px;
-        font-style: italic;
-    }
-    .ph-link-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: #F1F1EF;
-        border-radius: 4px;
-        padding: 3px 6px 3px 9px;
-        font-size: 12px;
-        color: #37352F;
-    }
-    .ph-link-chip-name {
-        font-weight: 500;
-    }
-    .ph-link-chip-role {
-        font-size: 10px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.03em;
-        padding: 1px 5px;
-        border-radius: 3px;
-    }
-    .ph-link-chip-role-main {
-        background: #DDF3E4;
-        color: #0F7B6C;
-    }
-    .ph-link-chip-role-backup {
-        background: #FDECC8;
-        color: #97701D;
-    }
-    .ph-link-chip-turnover {
-        color: #9B9A97;
-    }
-    .ph-link-chip-remove {
-        background: none;
-        border: none;
-        color: #9B9A97;
-        font-size: 14px;
-        line-height: 1;
-        cursor: pointer;
-        padding: 0 2px;
-        border-radius: 3px;
-    }
-    .ph-link-chip-remove:hover {
-        background: #E3E2E0;
-        color: #37352F;
-    }
-    .ph-relations-add {
-        display: flex;
-        gap: 6px;
-        align-items: center;
-    }
-    .ph-relations-select {
-        font-size: 12px;
-        padding: 3px 6px;
-        border: 1px solid #D9D9D6;
-        border-radius: 4px;
-        max-width: 220px;
-    }
-    .ph-relations-add-btn {
-        font-size: 12px !important;
-        padding: 2px 10px !important;
-        height: auto !important;
-        line-height: 1.6 !important;
-    }
-      </style>
-
     <script>
     (function () {
         const ajaxUrl = <?= json_encode($ajaxUrl) ?>;
@@ -495,6 +420,7 @@ function lbs_render_prop_hub_page() {
         const PK_COLUMNS = <?= json_encode($pkColumns) ?>;
         const ALL_CLEANERS = <?= json_encode($allCleanersJs) ?>;
         const ALL_PROPERTIES = <?= json_encode($allPropertiesJs) ?>;
+        const PANEL_COLUMN_BREAKS = <?= json_encode($panelColumnBreaks) ?>;
 
         function escapeHtml(str) {
             const div = document.createElement('div');
@@ -723,6 +649,7 @@ function lbs_render_prop_hub_page() {
         function closePanel() {
             panel.classList.remove('open');
             overlay.classList.remove('open');
+            document.body.classList.remove('ph-body-panel-open');
             document.querySelectorAll('.ph-row.ph-row-active').forEach(function (r) {
                 r.classList.remove('ph-row-active');
             });
@@ -1108,6 +1035,7 @@ function lbs_render_prop_hub_page() {
             const pk = tr.dataset.pk;
             const pkValue = tr.dataset.pkValue;
             const fields = PANEL_FIELDS[table] || [];
+            const breakKey = PANEL_COLUMN_BREAKS[table];
 
             // Panel-only fields (e.g. WiFi) have no <td> in the table — their
             // values travel with the row as a JSON blob instead.
@@ -1118,6 +1046,25 @@ function lbs_render_prop_hub_page() {
 
             panelBody.innerHTML = '';
             let titleText = '';
+
+            // Tables with a configured break key (currently just Properties,
+            // split after Hostco) get a two-column layout; everything else
+            // keeps the original single column.
+            let col1 = panelBody;
+            let col2 = panelBody;
+            if (breakKey) {
+                const columnsWrap = document.createElement('div');
+                columnsWrap.className = 'ph-panel-columns';
+                col1 = document.createElement('div');
+                col1.className = 'ph-panel-col';
+                col2 = document.createElement('div');
+                col2.className = 'ph-panel-col';
+                columnsWrap.appendChild(col1);
+                columnsWrap.appendChild(col2);
+                panelBody.appendChild(columnsWrap);
+            }
+
+            let pastBreak = false;
 
             fields.forEach(function (col) {
                 const td = tr.querySelector('.ph-cell[data-field="' + col.key + '"]');
@@ -1137,7 +1084,10 @@ function lbs_render_prop_hub_page() {
 
                 if (col.type === 'title' && !titleText) titleText = rawValue;
 
-                panelBody.appendChild(buildPanelField(tr, table, pk, pkValue, col, rawValue));
+                const target = pastBreak ? col2 : col1;
+                target.appendChild(buildPanelField(tr, table, pk, pkValue, col, rawValue));
+
+                if (breakKey && col.key === breakKey) pastBreak = true;
             });
 
             panelTitle.textContent = titleText || '(untitled)';
@@ -1145,7 +1095,7 @@ function lbs_render_prop_hub_page() {
             panel.dataset.pkValue = String(pkValue);
 
             const relationsField = buildRelationsField(table, pkValue);
-            if (relationsField) panelBody.appendChild(relationsField);
+            if (relationsField) col2.appendChild(relationsField);
 
             document.querySelectorAll('.ph-row.ph-row-active').forEach(function (r) {
                 r.classList.remove('ph-row-active');
@@ -1154,6 +1104,7 @@ function lbs_render_prop_hub_page() {
 
             panel.classList.add('open');
             overlay.classList.add('open');
+            document.body.classList.add('ph-body-panel-open');
         }
 
         document.querySelectorAll('.ph-row').forEach(function (tr) {
