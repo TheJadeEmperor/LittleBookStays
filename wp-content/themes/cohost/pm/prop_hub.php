@@ -57,8 +57,11 @@ function lbs_prop_status_options() {
 function lbs_prop_hub_tables() {
     return [
         'pm_prop_hub' => [
-            'pk'      => 'num',
-            'columns' => lbs_prop_hub_columns(),
+            'pk'          => 'num',
+            'columns'     => lbs_prop_hub_columns(),
+            // Fields that only appear in the right-hand sidebar panel, not
+            // as their own column in the main table.
+            'panel_extra' => lbs_prop_hub_panel_extra_columns(),
         ],
         'pm_cleaners' => [
             'pk'      => 'id',
@@ -68,6 +71,16 @@ function lbs_prop_hub_tables() {
             'pk'      => 'id',
             'columns' => lbs_contractors_columns(),
         ],
+    ];
+}
+
+// --- Panel-only fields: pm_prop_hub. Editable from the sidebar detail
+// panel only — not shown as columns in the main properties table. ---
+function lbs_prop_hub_panel_extra_columns() {
+    return [
+        ['key' => 'wifi_service',  'label' => 'WiFi Service',  'type' => 'text'],
+        ['key' => 'wifi_username', 'label' => 'WiFi Username', 'type' => 'text'],
+        ['key' => 'wifi_pw',       'label' => 'WiFi Password', 'type' => 'text'],
     ];
 }
 
@@ -83,13 +96,13 @@ function lbs_prop_hub_columns() {
         ['key' => 'client',    'label' => 'Client',           'type' => 'text'],
         ['key' => 'name',      'label' => 'Property',         'type' => 'title'],
         ['key' => 'close',     'label' => 'Close CRM',        'type' => 'link', 'chip' => 'CRM'],
-        ['key' => 'zip',       'label' => 'ZIP',               'type' => 'text'],
-        ['key' => 'shorturl',  'label' => 'Airbnb',           'type' => 'link', 'chip' => 'Listing'],
+        ['key' => 'zip',       'label' => 'ZIP',              'type' => 'text'],
+        ['key' => 'a_direct',  'label' => 'BNB Direct',       'type' => 'link', 'chip' => 'Listing'],
         ['key' => 'turno',     'label' => 'Turno',            'type' => 'link', 'chip' => 'Turno'],
         ['key' => 'gdrive',    'label' => 'Google Drive',     'type' => 'link', 'chip' => 'Folder'],
         ['key' => 'hosp',      'label' => 'Hospitable ID',    'type' => 'text'],
         ['key' => 'hosp_msg',  'label' => 'Messaging Rules',  'type' => 'link', 'chip' => 'Rules'],
-        ['key' => 'a_listing', 'label' => 'Airbnb Listing ID','type' => 'text'],
+        ['key' => 'a_direct',   'label' => 'Airbnb Listing ID','type' => 'text'],
         ['key' => 'v_list',    'label' => 'VRBO Listing',     'type' => 'link', 'chip' => 'Listing'],
         ['key' => 'v_ins',     'label' => 'VRBO Insurance',   'type' => 'link', 'chip' => 'Insurance'],
         ['key' => 'v_fees',    'label' => 'VRBO Fees',        'type' => 'link', 'chip' => 'Fees'],
@@ -111,7 +124,9 @@ function lbs_cleaners_columns() {
         ['key' => 'scheduler', 'label' => 'Scheduler',   'type' => 'text'],
         ['key' => 'chat',      'label' => 'Chat',        'type' => 'text'],
         ['key' => 'close',     'label' => 'Close CRM',   'type' => 'link', 'chip' => 'CRM'],
-        ['key' => 'photos',    'label' => 'Photos',      'type' => 'link', 'chip' => 'Folder'],
+        ['key' => 'address',    'label' => 'Address',   'type' => 'text', 'chip' => 'Folder'],
+        ['key' => 'turnover',    'label' => 'Turnover',     'type' => 'text', 'chip' => 'Folder'],
+        ['key' => 'phone',    'label' => 'Phone',       'type' => 'text', 'chip' => 'Folder'],
     ];
 }
 
@@ -121,12 +136,12 @@ function lbs_contractors_columns() {
         ['key' => 'id',      'label' => 'ID',        'type' => 'num'],
         ['key' => 'name',    'label' => 'Contractor','type' => 'title'],
         ['key' => 'title',   'label' => 'Trade',     'type' => 'text'],
-        ['label' => 'Property #','type' => 'num'],
-        ['key' => 'phone',   'label' => 'Phone',     'type' => 'text'],
         ['key' => 'address', 'label' => 'Address',   'type' => 'text'],
+        ['key' => 'close',   'label' => 'Close CRM', 'type' => 'link', 'chip' => 'CRM'],
+        ['key' => 'phone',   'label' => 'Phone',     'type' => 'text'],
         ['key' => 'payment', 'label' => 'Payment',   'type' => 'text'],
         ['key' => 'note',    'label' => 'Note',      'type' => 'text'],
-        ['key' => 'close',   'label' => 'Close CRM', 'type' => 'link', 'chip' => 'CRM'],
+        ['key' => 'url',    'label' => 'URL',      'type' => 'text'], 
     ];
 }
 
@@ -243,17 +258,20 @@ function lbs_fetch_table_rows($sqlTable, $columns, $orderBy) {
 // --- Render one Notion-style table section (heading + table + count).
 // Rows get data-table / data-pk / data-pk-value so the row-click handler
 // knows which record + table to open in the sidebar panel. ---
-function lbs_render_table_section($heading, $sqlTable, $pkColumn, $rows, $columns, $dbError, $cellCallback) {
+function lbs_render_table_section($heading, $sqlTable, $pkColumn, $rows, $columns, $dbError, $cellCallback, $panelExtraColumns = []) {
     ?>
     <h2 class="ph-section-title"><?= esc_html($heading) ?></h2>
     <p class="ph-subtitle">Pulled live from <code><?= esc_html($sqlTable) ?></code>. Click a row to open it.</p>
     <?php
-    lbs_render_table_body($sqlTable, $pkColumn, $rows, $columns, $dbError, $cellCallback, $heading);
+    lbs_render_table_body($sqlTable, $pkColumn, $rows, $columns, $dbError, $cellCallback, $heading, $panelExtraColumns);
 }
 
 // --- Render just the table/empty-state/count (no heading) — used directly
-// by Properties, which prints its own heading + view tabs above this. ---
-function lbs_render_table_body($sqlTable, $pkColumn, $rows, $columns, $dbError, $cellCallback, $heading) {
+// by Properties, which prints its own heading + view tabs above this.
+// $panelExtraColumns (optional): panel-only fields (no visible <td>) that
+// still need to travel with the row so the sidebar panel can read them —
+// stashed as a JSON blob in data-panel-extra on the <tr>. ---
+function lbs_render_table_body($sqlTable, $pkColumn, $rows, $columns, $dbError, $cellCallback, $heading, $panelExtraColumns = []) {
     ?>
     <?php if ($dbError): ?>
         <div class="notice notice-error"><p>Could not load <?= esc_html($heading) ?>: <?= esc_html($dbError) ?></p></div>
@@ -272,11 +290,22 @@ function lbs_render_table_body($sqlTable, $pkColumn, $rows, $columns, $dbError, 
                     </thead>
                     <tbody>
                         <?php foreach ($rows as $row): ?>
+                            <?php
+                            $panelExtraAttr = '';
+                            if (!empty($panelExtraColumns)) {
+                                $extraData = [];
+                                foreach ($panelExtraColumns as $ecol) {
+                                    $v = isset($row[$ecol['key']]) ? $row[$ecol['key']] : '';
+                                    $extraData[$ecol['key']] = is_string($v) ? trim($v) : $v;
+                                }
+                                $panelExtraAttr = ' data-panel-extra="' . esc_attr(wp_json_encode($extraData)) . '"';
+                            }
+                            ?>
                             <tr class="ph-row"
                                 data-table="<?= esc_attr($sqlTable) ?>"
                                 data-pk="<?= esc_attr($pkColumn) ?>"
                                 data-pk-value="<?= esc_attr($row[$pkColumn]) ?>"
-                                <?php if (isset($row['status'])): ?>data-status="<?= esc_attr($row['status']) ?>"<?php endif; ?>>
+                                <?php if (isset($row['status'])): ?>data-status="<?= esc_attr($row['status']) ?>"<?php endif; ?><?= $panelExtraAttr ?>>
                                 <?php foreach ($columns as $col): ?>
                                     <?php call_user_func($cellCallback, $row, $col); ?>
                                 <?php endforeach; ?>
@@ -298,7 +327,11 @@ function lbs_render_prop_hub_page() {
 
     $tables = lbs_prop_hub_tables();
 
-    $propData = lbs_fetch_table_rows('pm_prop_hub', $tables['pm_prop_hub']['columns'], 'num');
+    $propData = lbs_fetch_table_rows(
+        'pm_prop_hub',
+        array_merge($tables['pm_prop_hub']['columns'], $tables['pm_prop_hub']['panel_extra']),
+        'num'
+    );
     $cleanerData = lbs_fetch_table_rows('pm_cleaners', $tables['pm_cleaners']['columns'], 'id');
     $contractorData = lbs_fetch_table_rows('pm_contractors', $tables['pm_contractors']['columns'], 'id');
 
@@ -312,7 +345,11 @@ function lbs_render_prop_hub_page() {
     $panelFields = [];
     $pkColumns = [];
     foreach ($tables as $tableName => $def) {
-        $panelFields[$tableName] = lbs_dedupe_columns($def['columns']);
+        $fields = lbs_dedupe_columns($def['columns']);
+        if (!empty($def['panel_extra'])) {
+            $fields = array_merge($fields, $def['panel_extra']);
+        }
+        $panelFields[$tableName] = $fields;
         $pkColumns[$tableName] = $def['pk'];
     }
     $statusOptionsJs = lbs_prop_status_options();
@@ -334,7 +371,7 @@ function lbs_render_prop_hub_page() {
             </div>
 
             <?php
-            lbs_render_table_body('pm_prop_hub', 'num', $propData['rows'], $tables['pm_prop_hub']['columns'], $propData['error'], 'lbs_render_prop_cell', 'Properties');
+            lbs_render_table_body('pm_prop_hub', 'num', $propData['rows'], $tables['pm_prop_hub']['columns'], $propData['error'], 'lbs_render_prop_cell', 'Properties', $tables['pm_prop_hub']['panel_extra']);
             ?>
         </div>
 
@@ -354,374 +391,11 @@ function lbs_render_prop_hub_page() {
         <div class="ph-panel-body" id="ph-panel-body"></div>
     </aside>
 
-    <style>
-        .ph-wrap {
-            font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-            color: #37352F;
-        }
-        .ph-section-title {
-            margin-top: 44px;
-            margin-bottom: 2px;
-            font-size: 19px;
-        }
-        .ph-wrap > .ph-section-title:first-of-type {
-            margin-top: 30px;
-        }
-        .ph-subtitle {
-            color: #9B9A97;
-            font-size: 13px;
-            margin-top: 0;
-            margin-bottom: 18px;
-        }
-        .ph-subtitle code {
-            background: #F1F1EF;
-            color: #37352F;
-            padding: 1px 6px;
-            border-radius: 4px;
-            font-size: 12px;
-        }
-        .ph-quicklinks {
-            margin-bottom: 10px;
-        }
-        .ph-empty-state {
-            color: #9B9A97;
-            font-size: 14px;
-            padding: 40px 0;
-            text-align: center;
-            border: 1px dashed #E9E9E7;
-            border-radius: 8px;
-            max-width: 900px;
-        }
+<style>
+     
+       
 
-        /* Centered Notion-style database table */
-        .ph-table-shell {
-            display: flex;
-            justify-content: center;
-            width: 100%;
-        }
-        .ph-table-scroll {
-            max-width: 100%;
-            overflow-x: auto;
-            overflow-y: visible;
-            border: 1px solid #E9E9E7;
-            border-radius: 8px;
-            box-shadow: 0 1px 2px rgba(15, 15, 15, 0.04);
-        }
-        .ph-table {
-            border-collapse: separate;
-            border-spacing: 0;
-            background: #FFFFFF;
-            font-size: 13px;
-        }
-        .ph-th {
-            position: sticky;
-            top: 0;
-            background: #FBFBFA;
-            color: #9B9A97;
-            font-weight: 600;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            text-align: left;
-            padding: 9px 14px;
-            border-bottom: 1px solid #E9E9E7;
-            border-right: 1px solid #F1F1EF;
-            white-space: nowrap;
-        }
-        .ph-th:last-child {
-            border-right: none;
-        }
-        .ph-row {
-            cursor: pointer;
-        }
-        .ph-row:hover .ph-cell {
-            background: #F7F6F5;
-        }
-        .ph-row.ph-row-active .ph-cell {
-            background: #EDF3FB;
-        }
-        .ph-cell {
-            padding: 8px 14px;
-            border-bottom: 1px solid #F1F1EF;
-            border-right: 1px solid #F1F1EF;
-            white-space: nowrap;
-            max-width: 220px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            vertical-align: middle;
-        }
-        .ph-status-cell {
-            overflow: visible; /* let the dropdown escape the cell */
-        }
-        .ph-row:last-child .ph-cell {
-            border-bottom: none;
-        }
-        .ph-cell:last-child {
-            border-right: none;
-        }
-        .ph-num {
-            color: #9B9A97;
-            font-variant-numeric: tabular-nums;
-            text-align: right;
-            width: 36px;
-        }
-        .ph-title {
-            font-weight: 500;
-            color: #37352F;
-        }
-        .ph-title-icon {
-            color: #A9A9A6;
-            margin-right: 6px;
-        }
-        .ph-text {
-            color: #37352F;
-        }
-        .ph-empty .ph-dash {
-            color: #D8D8D5;
-        }
-
-        .ph-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 2px 9px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-        .ph-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-
-        .ph-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 2px 9px;
-            border-radius: 4px;
-            background: #DDEBF1;
-            color: #337EA9;
-            font-size: 12px;
-            font-weight: 500;
-            text-decoration: none;
-        }
-        .ph-chip:hover {
-            background: #C7E0EA;
-            color: #276583;
-        }
-        .ph-chip-arrow {
-            font-size: 11px;
-        }
-
-        .ph-count {
-            text-align: center;
-            color: #9B9A97;
-            font-size: 12px;
-            margin-top: 10px;
-        }
-
-        /* View tabs (Properties: Default / Cancelled) */
-        .ph-tabs {
-            display: flex;
-            gap: 4px;
-            border-bottom: 1px solid #E9E9E7;
-            margin-bottom: 16px;
-        }
-        .ph-tab {
-            background: none;
-            border: none;
-            border-bottom: 2px solid transparent;
-            padding: 8px 4px;
-            margin-right: 18px;
-            font-size: 13px;
-            font-weight: 500;
-            color: #9B9A97;
-            cursor: pointer;
-        }
-        .ph-tab:hover {
-            color: #37352F;
-        }
-        .ph-tab.ph-tab-active {
-            color: #37352F;
-            border-bottom-color: #37352F;
-        }
-
-        /* Status dropdown, Notion-style */
-        .ph-status-wrap {
-            position: relative;
-            display: inline-block;
-        }
-        .ph-status-trigger {
-            border: 1px solid transparent;
-            cursor: pointer;
-        }
-        .ph-status-trigger:hover {
-            border-color: rgba(0, 0, 0, 0.08);
-        }
-        .ph-status-menu {
-            display: none;
-            position: absolute;
-            top: calc(100% + 4px);
-            left: 0;
-            z-index: 100050;
-            min-width: 160px;
-            background: #FFFFFF;
-            border: 1px solid #E9E9E7;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(15, 15, 15, 0.12), 0 0 0 1px rgba(15, 15, 15, 0.02);
-            padding: 4px;
-        }
-        .ph-status-menu.open {
-            display: block;
-        }
-        .ph-status-option {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            padding: 6px 8px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .ph-status-option:hover {
-            background: #F1F1EF;
-        }
-        .ph-status-option-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 2px 9px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-        .ph-status-check {
-            font-size: 11px;
-            color: #37352F;
-            visibility: hidden;
-        }
-        .ph-status-option.ph-status-selected .ph-status-check {
-            visibility: visible;
-        }
-
-        /* ---- Slide-in detail panel ---- */
-        .ph-panel-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(15, 15, 15, 0.12);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.18s ease;
-            z-index: 100060;
-        }
-        .ph-panel-overlay.open {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        .ph-panel {
-            position: fixed;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            width: 420px;
-            max-width: 90vw;
-            background: #FFFFFF;
-            border-left: 1px solid #E9E9E7;
-            box-shadow: -8px 0 24px rgba(15, 15, 15, 0.10);
-            transform: translateX(100%);
-            transition: transform 0.22s ease;
-            z-index: 100070;
-            display: flex;
-            flex-direction: column;
-            font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-        }
-        .ph-panel.open {
-            transform: translateX(0);
-        }
-        .ph-panel-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            padding: 16px 20px;
-            border-bottom: 1px solid #F1F1EF;
-            flex-shrink: 0;
-        }
-        .ph-panel-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: #37352F;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        .ph-panel-close {
-            background: none;
-            border: none;
-            font-size: 20px;
-            line-height: 1;
-            color: #9B9A97;
-            cursor: pointer;
-            padding: 4px 6px;
-            border-radius: 4px;
-            flex-shrink: 0;
-        }
-        .ph-panel-close:hover {
-            background: #F1F1EF;
-            color: #37352F;
-        }
-        .ph-panel-body {
-            overflow-y: auto;
-            padding: 8px 20px 30px;
-            flex: 1;
-        }
-        .ph-panel-field {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            padding: 9px 0;
-            border-bottom: 1px solid #F7F6F5;
-        }
-        .ph-panel-label {
-            width: 130px;
-            flex-shrink: 0;
-            font-size: 12px;
-            color: #9B9A97;
-            font-weight: 500;
-            padding-top: 3px;
-        }
-        .ph-panel-value {
-            flex: 1;
-            min-width: 0;
-            font-size: 14px;
-            color: #37352F;
-            cursor: text;
-            min-height: 22px;
-            word-break: break-word;
-        }
-        .ph-panel-value .ph-dash {
-            color: #D8D8D5;
-        }
-        .ph-panel-readonly {
-            color: #9B9A97;
-            cursor: default;
-        }
-        .ph-panel-input {
-            width: 100%;
-            font-size: 14px;
-            font-family: inherit;
-            border: 1px solid #999;
-            border-radius: 4px;
-            padding: 3px 7px;
-            box-sizing: border-box;
-        }
-        .ph-panel-value .ph-status-wrap {
-            display: block;
-        }
-    </style>
+      </style>
 
     <script>
     (function () {
@@ -997,12 +671,24 @@ function lbs_render_prop_hub_page() {
                 }
                 // Sync every cell for this field in the table row (handles duplicate columns).
                 if (tr) {
-                    tr.querySelectorAll('.ph-cell[data-field="' + col.key + '"]').forEach(function (td) {
-                        td.dataset.raw = newValue;
-                        td.classList.toggle('ph-empty', newValue === '');
-                        td.title = newValue;
-                        td.innerHTML = renderValueHtml(col, newValue);
-                    });
+                    const matchingCells = tr.querySelectorAll('.ph-cell[data-field="' + col.key + '"]');
+                    if (matchingCells.length) {
+                        matchingCells.forEach(function (td) {
+                            td.dataset.raw = newValue;
+                            td.classList.toggle('ph-empty', newValue === '');
+                            td.title = newValue;
+                            td.innerHTML = renderValueHtml(col, newValue);
+                        });
+                    } else {
+                        // Panel-only field (e.g. WiFi) — no <td> to update, so
+                        // refresh the row's cached JSON instead.
+                        let extra = {};
+                        if (tr.dataset.panelExtra) {
+                            try { extra = JSON.parse(tr.dataset.panelExtra); } catch (e) { extra = {}; }
+                        }
+                        extra[col.key] = newValue;
+                        tr.dataset.panelExtra = JSON.stringify(extra);
+                    }
                     // If this was the title field, refresh the panel header too.
                     if (col.type === 'title' && panel.dataset.table === table && panel.dataset.pkValue === String(pkValue)) {
                         panelTitle.textContent = newValue || '(untitled)';
@@ -1117,6 +803,13 @@ function lbs_render_prop_hub_page() {
             const pkValue = tr.dataset.pkValue;
             const fields = PANEL_FIELDS[table] || [];
 
+            // Panel-only fields (e.g. WiFi) have no <td> in the table — their
+            // values travel with the row as a JSON blob instead.
+            let panelExtra = {};
+            if (tr.dataset.panelExtra) {
+                try { panelExtra = JSON.parse(tr.dataset.panelExtra); } catch (e) { panelExtra = {}; }
+            }
+
             panelBody.innerHTML = '';
             let titleText = '';
 
@@ -1128,8 +821,12 @@ function lbs_render_prop_hub_page() {
                     rawValue = trigger ? trigger.dataset.status : '0';
                 } else if (col.key === pk) {
                     rawValue = td ? td.textContent.trim() : pkValue;
+                } else if (td) {
+                    rawValue = td.dataset.raw !== undefined ? td.dataset.raw : td.textContent.trim();
+                } else if (Object.prototype.hasOwnProperty.call(panelExtra, col.key)) {
+                    rawValue = panelExtra[col.key];
                 } else {
-                    rawValue = td ? (td.dataset.raw !== undefined ? td.dataset.raw : td.textContent.trim()) : '';
+                    rawValue = '';
                 }
 
                 if (col.type === 'title' && !titleText) titleText = rawValue;
@@ -1196,6 +893,7 @@ function lbs_render_prop_hub_page() {
     })();
     </script>
     <?php
+
 }
 
 // --- AJAX handler for updating a property's status ---
@@ -1248,6 +946,9 @@ function lbs_update_row_field() {
     }
 
     $validFields = array_unique(array_column($tables[$table]['columns'], 'key'));
+    if (!empty($tables[$table]['panel_extra'])) {
+        $validFields = array_unique(array_merge($validFields, array_column($tables[$table]['panel_extra'], 'key')));
+    }
     // Status has its own dedicated dropdown/handler; the pk column isn't editable here.
     if ($field === 'status' || $field === $pk || !in_array($field, $validFields, true)) {
         wp_send_json_error(['error' => 'Invalid field'], 400);
