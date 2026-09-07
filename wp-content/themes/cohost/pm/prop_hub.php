@@ -337,7 +337,18 @@ function lbs_render_prop_hub_page() {
 
     $statusNonce = wp_create_nonce('lbs_prop_hub_status');
     $fieldNonce = wp_create_nonce('lbs_prop_hub_field');
+    $linksNonce = wp_create_nonce('lbs_prop_hub_links');
     $ajaxUrl = admin_url('admin-ajax.php');
+
+    // Lightweight id/name lists for the panel's "link a cleaner" /
+    // "link a property" dropdown — built from data already fetched above,
+    // no extra query needed.
+    $allCleanersJs = array_map(function ($r) {
+        return ['id' => (int) $r['id'], 'name' => $r['name']];
+    }, $cleanerData['rows']);
+    $allPropertiesJs = array_map(function ($r) {
+        return ['id' => (int) $r['num'], 'name' => $r['name']];
+    }, $propData['rows']);
 
     // Panel field config + status palette, handed to JS so the sidebar
     // panel (and the re-render after a save) share the exact same rules
@@ -392,9 +403,85 @@ function lbs_render_prop_hub_page() {
     </aside>
 
 <style>
-     
-       
-
+    .ph-relations-value {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .ph-relations-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+    .ph-relations-loading {
+        color: #9B9A97;
+        font-size: 13px;
+        font-style: italic;
+    }
+    .ph-link-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #F1F1EF;
+        border-radius: 4px;
+        padding: 3px 6px 3px 9px;
+        font-size: 12px;
+        color: #37352F;
+    }
+    .ph-link-chip-name {
+        font-weight: 500;
+    }
+    .ph-link-chip-role {
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        padding: 1px 5px;
+        border-radius: 3px;
+    }
+    .ph-link-chip-role-main {
+        background: #DDF3E4;
+        color: #0F7B6C;
+    }
+    .ph-link-chip-role-backup {
+        background: #FDECC8;
+        color: #97701D;
+    }
+    .ph-link-chip-turnover {
+        color: #9B9A97;
+    }
+    .ph-link-chip-remove {
+        background: none;
+        border: none;
+        color: #9B9A97;
+        font-size: 14px;
+        line-height: 1;
+        cursor: pointer;
+        padding: 0 2px;
+        border-radius: 3px;
+    }
+    .ph-link-chip-remove:hover {
+        background: #E3E2E0;
+        color: #37352F;
+    }
+    .ph-relations-add {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+    }
+    .ph-relations-select {
+        font-size: 12px;
+        padding: 3px 6px;
+        border: 1px solid #D9D9D6;
+        border-radius: 4px;
+        max-width: 220px;
+    }
+    .ph-relations-add-btn {
+        font-size: 12px !important;
+        padding: 2px 10px !important;
+        height: auto !important;
+        line-height: 1.6 !important;
+    }
       </style>
 
     <script>
@@ -402,9 +489,12 @@ function lbs_render_prop_hub_page() {
         const ajaxUrl = <?= json_encode($ajaxUrl) ?>;
         const statusNonce = <?= json_encode($statusNonce) ?>;
         const fieldNonce = <?= json_encode($fieldNonce) ?>;
+        const linksNonce = <?= json_encode($linksNonce) ?>;
         const STATUS_OPTIONS = <?= json_encode($statusOptionsJs) ?>;
         const PANEL_FIELDS = <?= json_encode($panelFields) ?>;
         const PK_COLUMNS = <?= json_encode($pkColumns) ?>;
+        const ALL_CLEANERS = <?= json_encode($allCleanersJs) ?>;
+        const ALL_PROPERTIES = <?= json_encode($allPropertiesJs) ?>;
 
         function escapeHtml(str) {
             const div = document.createElement('div');
@@ -797,6 +887,222 @@ function lbs_render_prop_hub_page() {
             return field;
         }
 
+        // --- Cleaners <-> Properties many-to-many link, via pm_props_cleaners.
+        // Panel-only, per the earlier decision (table view stays uncluttered). ---
+        const RELATION_CONFIG = {
+            pm_prop_hub:  { label: 'Cleaners',   otherList: ALL_CLEANERS,   otherNoun: 'cleaner' },
+            pm_cleaners:  { label: 'Properties', otherList: ALL_PROPERTIES, otherNoun: 'property' },
+        };
+
+        function buildRelationsField(table, pkValue) {
+            const config = RELATION_CONFIG[table];
+            if (!config) return null;
+
+            const field = document.createElement('div');
+            field.className = 'ph-panel-field';
+
+            const label = document.createElement('div');
+            label.className = 'ph-panel-label';
+            label.textContent = config.label;
+            field.appendChild(label);
+
+            const valueWrap = document.createElement('div');
+            valueWrap.className = 'ph-panel-value ph-relations-value';
+
+            const chipsWrap = document.createElement('div');
+            chipsWrap.className = 'ph-relations-chips';
+            chipsWrap.innerHTML = '<span class="ph-relations-loading">Loading…</span>';
+            valueWrap.appendChild(chipsWrap);
+
+            const addRow = document.createElement('div');
+            addRow.className = 'ph-relations-add';
+            const select = document.createElement('select');
+            select.className = 'ph-relations-select';
+            const addBtn = document.createElement('button');
+            addBtn.type = 'button';
+            addBtn.className = 'ph-relations-add-btn button';
+            addBtn.textContent = 'Add';
+            addRow.appendChild(select);
+            addRow.appendChild(addBtn);
+            valueWrap.appendChild(addRow);
+
+            field.appendChild(valueWrap);
+
+            let currentLinks = [];
+
+            function renderSelectOptions() {
+                const linkedIds = currentLinks.map(function (l) { return String(l.other_id); });
+                const available = config.otherList.filter(function (item) {
+                    return linkedIds.indexOf(String(item.id)) === -1;
+                });
+                select.innerHTML = '';
+                if (!available.length) {
+                    const opt = document.createElement('option');
+                    opt.textContent = 'All ' + config.label.toLowerCase() + ' already linked';
+                    opt.disabled = true;
+                    select.appendChild(opt);
+                    select.disabled = true;
+                    addBtn.disabled = true;
+                    return;
+                }
+                select.disabled = false;
+                addBtn.disabled = false;
+                available.forEach(function (item) {
+                    const opt = document.createElement('option');
+                    opt.value = item.id;
+                    opt.textContent = item.name || ('#' + item.id);
+                    select.appendChild(opt);
+                });
+            }
+
+            function renderChips() {
+                if (!currentLinks.length) {
+                    chipsWrap.innerHTML = '<span class="ph-dash">—</span>';
+                    return;
+                }
+                chipsWrap.innerHTML = '';
+                currentLinks.forEach(function (link) {
+                    const chip = document.createElement('span');
+                    chip.className = 'ph-link-chip';
+                    const roleClass = String(link.role).toLowerCase() === 'backup'
+                        ? 'ph-link-chip-role-backup' : 'ph-link-chip-role-main';
+
+                    const nameSpan = document.createElement('span');
+                    nameSpan.className = 'ph-link-chip-name';
+                    nameSpan.textContent = link.other_name;
+                    chip.appendChild(nameSpan);
+
+                    const roleSpan = document.createElement('span');
+                    roleSpan.className = 'ph-link-chip-role ' + roleClass;
+                    roleSpan.textContent = link.role;
+                    chip.appendChild(roleSpan);
+
+                    if (link.turnover) {
+                        const turnoverSpan = document.createElement('span');
+                        turnoverSpan.className = 'ph-link-chip-turnover';
+                        turnoverSpan.textContent = link.turnover;
+                        chip.appendChild(turnoverSpan);
+                    }
+
+                    const removeBtn = document.createElement('button');
+                    removeBtn.type = 'button';
+                    removeBtn.className = 'ph-link-chip-remove';
+                    removeBtn.innerHTML = '&times;';
+                    removeBtn.title = 'Remove this link';
+                    removeBtn.addEventListener('click', function () {
+                        if (!confirm('Remove this link?')) return;
+                        removeBtn.disabled = true;
+
+                        const body = new URLSearchParams();
+                        body.append('action', 'lbs_remove_prop_cleaner_link');
+                        body.append('nonce', linksNonce);
+                        body.append('link_id', link.id);
+
+                        fetch(ajaxUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: body.toString()
+                        })
+                        .then(function (res) { return res.json(); })
+                        .then(function (data) {
+                            if (!data.success) {
+                                alert('Could not remove link: ' + (data.data && data.data.error ? data.data.error : 'unknown error'));
+                                removeBtn.disabled = false;
+                                return;
+                            }
+                            currentLinks = currentLinks.filter(function (l) { return l.id !== link.id; });
+                            renderChips();
+                            renderSelectOptions();
+                        })
+                        .catch(function () {
+                            alert('Network error - could not remove link.');
+                            removeBtn.disabled = false;
+                        });
+                    });
+                    chip.appendChild(removeBtn);
+
+                    chipsWrap.appendChild(chip);
+                });
+            }
+
+            addBtn.addEventListener('click', function () {
+                const otherId = select.value;
+                if (!otherId) return;
+                addBtn.disabled = true;
+
+                const body = new URLSearchParams();
+                body.append('action', 'lbs_add_prop_cleaner_link');
+                body.append('nonce', linksNonce);
+                if (table === 'pm_prop_hub') {
+                    body.append('prop_id', pkValue);
+                    body.append('cleaner_id', otherId);
+                } else {
+                    body.append('prop_id', otherId);
+                    body.append('cleaner_id', pkValue);
+                }
+
+                fetch(ajaxUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: body.toString()
+                })
+                .then(function (res) { return res.json(); })
+                .then(function (data) {
+                    addBtn.disabled = false;
+                    if (!data.success) {
+                        alert('Could not add link: ' + (data.data && data.data.error ? data.data.error : 'unknown error'));
+                        return;
+                    }
+                    const otherItem = config.otherList.find(function (item) { return String(item.id) === String(otherId); });
+                    currentLinks.push({
+                        id: data.data.id,
+                        role: data.data.role,
+                        turnover: '',
+                        other_id: otherId,
+                        other_name: otherItem ? otherItem.name : ('#' + otherId)
+                    });
+                    renderChips();
+                    renderSelectOptions();
+                })
+                .catch(function () {
+                    addBtn.disabled = false;
+                    alert('Network error - could not add link.');
+                });
+            });
+
+            const body = new URLSearchParams();
+            body.append('action', 'lbs_get_row_links');
+            body.append('nonce', linksNonce);
+            body.append('table', table);
+            body.append('pk_value', pkValue);
+
+            fetch(ajaxUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: body.toString()
+            })
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                // The panel may have moved on to a different row by now.
+                if (panel.dataset.table !== table || panel.dataset.pkValue !== String(pkValue)) return;
+
+                if (!data.success) {
+                    chipsWrap.innerHTML = '<span class="ph-dash">Could not load</span>';
+                    return;
+                }
+                currentLinks = data.data.links || [];
+                renderChips();
+                renderSelectOptions();
+            })
+            .catch(function () {
+                if (panel.dataset.table === table && panel.dataset.pkValue === String(pkValue)) {
+                    chipsWrap.innerHTML = '<span class="ph-dash">Network error</span>';
+                }
+            });
+
+            return field;
+        }
+
         function openPanel(tr) {
             const table = tr.dataset.table;
             const pk = tr.dataset.pk;
@@ -837,6 +1143,9 @@ function lbs_render_prop_hub_page() {
             panelTitle.textContent = titleText || '(untitled)';
             panel.dataset.table = table;
             panel.dataset.pkValue = String(pkValue);
+
+            const relationsField = buildRelationsField(table, pkValue);
+            if (relationsField) panelBody.appendChild(relationsField);
 
             document.querySelectorAll('.ph-row.ph-row-active').forEach(function (r) {
                 r.classList.remove('ph-row-active');
@@ -962,4 +1271,116 @@ function lbs_update_row_field() {
     $stmt->execute([':value' => $value, ':pk_value' => $pkValue]);
 
     wp_send_json_success(['table' => $table, 'field' => $field, 'value' => $value]);
+}
+
+// --- AJAX handler: fetch the cleaners linked to a property, or the
+// properties linked to a cleaner, via the pm_props_cleaners junction table. ---
+add_action('wp_ajax_lbs_get_row_links', 'lbs_get_row_links');
+
+function lbs_get_row_links() {
+    check_ajax_referer('lbs_prop_hub_links', 'nonce');
+
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error(['error' => 'Not allowed'], 403);
+    }
+
+    $table = isset($_POST['table']) ? sanitize_text_field($_POST['table']) : '';
+    $pkValue = isset($_POST['pk_value']) ? (int) $_POST['pk_value'] : 0;
+
+    if ($pkValue <= 0 || !in_array($table, ['pm_prop_hub', 'pm_cleaners'], true)) {
+        wp_send_json_error(['error' => 'Invalid table or record'], 400);
+    }
+
+    $pdo = lbs_prop_hub_db();
+
+    if ($table === 'pm_prop_hub') {
+        // A property — return every cleaner linked to it.
+        $stmt = $pdo->prepare(
+            'SELECT pc.id, pc.role, pc.turnover, c.id AS other_id, c.name AS other_name
+             FROM pm_props_cleaners pc
+             JOIN pm_cleaners c ON c.id = pc.cleaner_id
+             WHERE pc.prop_id = :pk_value
+             ORDER BY pc.role, c.name'
+        );
+    } else {
+        // A cleaner — return every property linked to it.
+        $stmt = $pdo->prepare(
+            'SELECT pc.id, pc.role, pc.turnover, p.num AS other_id, p.name AS other_name
+             FROM pm_props_cleaners pc
+             JOIN pm_prop_hub p ON p.num = pc.prop_id
+             WHERE pc.cleaner_id = :pk_value
+             ORDER BY pc.role, p.name'
+        );
+    }
+
+    $stmt->execute([':pk_value' => $pkValue]);
+    wp_send_json_success(['links' => $stmt->fetchAll()]);
+}
+
+// --- AJAX handler: link a cleaner to a property (insert into
+// pm_props_cleaners). Defaults role to 'Main' and turnover to blank —
+// both are editable later directly on the junction table if needed. ---
+add_action('wp_ajax_lbs_add_prop_cleaner_link', 'lbs_add_prop_cleaner_link');
+
+function lbs_add_prop_cleaner_link() {
+    check_ajax_referer('lbs_prop_hub_links', 'nonce');
+
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error(['error' => 'Not allowed'], 403);
+    }
+
+    $propId = isset($_POST['prop_id']) ? (int) $_POST['prop_id'] : 0;
+    $cleanerId = isset($_POST['cleaner_id']) ? (int) $_POST['cleaner_id'] : 0;
+    $role = 'Main';
+
+    if ($propId <= 0 || $cleanerId <= 0) {
+        wp_send_json_error(['error' => 'Invalid property or cleaner'], 400);
+    }
+
+    $pdo = lbs_prop_hub_db();
+
+    try {
+        $stmt = $pdo->prepare(
+            'INSERT INTO pm_props_cleaners (prop_id, cleaner_id, role, turnover) VALUES (:prop_id, :cleaner_id, :role, "")'
+        );
+        $stmt->execute([':prop_id' => $propId, ':cleaner_id' => $cleanerId, ':role' => $role]);
+    } catch (PDOException $e) {
+        // MySQL error code 1062 = duplicate entry, which the unique key
+        // on (prop_id, cleaner_id) throws if this pair is already linked.
+        if ((int) $e->errorInfo[1] === 1062) {
+            wp_send_json_error(['error' => 'That link already exists'], 409);
+        }
+        wp_send_json_error(['error' => $e->getMessage()], 500);
+    }
+
+    wp_send_json_success([
+        'id'         => (int) $pdo->lastInsertId(),
+        'prop_id'    => $propId,
+        'cleaner_id' => $cleanerId,
+        'role'       => $role,
+    ]);
+}
+
+// --- AJAX handler: unlink a cleaner from a property (delete the
+// pm_props_cleaners row by its own id). ---
+add_action('wp_ajax_lbs_remove_prop_cleaner_link', 'lbs_remove_prop_cleaner_link');
+
+function lbs_remove_prop_cleaner_link() {
+    check_ajax_referer('lbs_prop_hub_links', 'nonce');
+
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error(['error' => 'Not allowed'], 403);
+    }
+
+    $linkId = isset($_POST['link_id']) ? (int) $_POST['link_id'] : 0;
+
+    if ($linkId <= 0) {
+        wp_send_json_error(['error' => 'Invalid link'], 400);
+    }
+
+    $pdo = lbs_prop_hub_db();
+    $stmt = $pdo->prepare('DELETE FROM pm_props_cleaners WHERE id = :id');
+    $stmt->execute([':id' => $linkId]);
+
+    wp_send_json_success(['id' => $linkId]);
 }
