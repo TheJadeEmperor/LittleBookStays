@@ -22,7 +22,7 @@ class CloseApiClient
     private const BASE_URL = 'https://api.close.com/api/v1';
 
     private  $apiKey;
-    private     $timeout;
+    private  $timeout;
 
     // -------------------------------------------------------------------------
     // Constructor
