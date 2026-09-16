@@ -11,7 +11,7 @@
 // always points at whatever database WordPress itself is using.
 function lbs_prop_hub_db() {
     static $pdo = null;
-    if ($pdo === null) { 
+    if ($pdo === null) {
         global $wpdb;
 
         $pdo = new PDO(
@@ -55,16 +55,15 @@ function lbs_prop_hub_tables() {
             'columns' => lbs_cleaners_columns(),
         ],
         'pm_contractors' => [
-            'pk'          => 'id',
-            'columns'     => lbs_contractors_columns(),
-            'panel_extra' => lbs_contractors_panel_extra_columns(),
+            'pk'      => 'id',
+            'columns' => lbs_contractors_columns(),
         ],
     ];
 }
 
 // --- Panel-only fields: pm_prop_hub. Editable from the sidebar detail
 // panel only — not shown as columns in the main properties table. ---
-function lbs_prop_hub_panel_extra_columns() {  
+function lbs_prop_hub_panel_extra_columns() {
     return [
         ['key' => 'wifi_service',  'label' => 'WiFi Service',  'type' => 'text'],
         ['key' => 'wifi_username', 'label' => 'WiFi Username', 'type' => 'text'],
@@ -95,22 +94,21 @@ function lbs_prop_hub_columns() {
         ['key' => 'zip',       'label' => 'ZIP',              'type' => 'text'],
         ['key' => 'a_direct',  'label' => 'BNB Direct',       'type' => 'link', 'chip' => 'Listing'],
         ['key' => 'turno',     'label' => 'Turno',            'type' => 'link', 'chip' => 'Turno'],
-        ['key' => 'gdrive',    'label' => 'Google Drive',     'type' => 'link', 'chip' => 'Folder', 'prefix' => 'https://drive.google.com/drive/folders/'],
+        ['key' => 'gdrive',    'label' => 'Google Drive',     'type' => 'link', 'chip' => 'Folder'],
         ['key' => 'hosp',      'label' => 'Hospitable ID',    'type' => 'text'],
         ['key' => 'hosp_msg',  'label' => 'Messaging Rules',  'type' => 'link', 'chip' => 'Rules'],
         ['key' => 'a_direct',   'label' => 'Airbnb Listing ID','type' => 'text'],
-        
-
-        ['key' => 'name',      'label' => 'Property',         'type' => 'title'], 
         ['key' => 'v_list',    'label' => 'VRBO Listing',     'type' => 'link', 'chip' => 'Listing'],
         ['key' => 'v_ins',     'label' => 'VRBO Insurance',   'type' => 'link', 'chip' => 'Insurance'],
         ['key' => 'v_fees',    'label' => 'VRBO Fees',        'type' => 'link', 'chip' => 'Fees'],
         ['key' => 'v_live',    'label' => 'VRBO Live',        'type' => 'link', 'chip' => 'Live'],
-        ['key' => 'pricelabs', 'label' => 'PriceLabs',        'type' => 'link', 'chip' => 'Pricing', 'template' => 'https://app.pricelabs.co/pricing?listings={value}&pms_name=smartbnb&open_calendar=true'],
-        ['key' => 'compset',   'label' => 'CompSet',          'type' => 'link', 'chip' => 'CompSet', 'prefix' => 'https://app.pricelabs.co/reports/'],
-        ['key' => 'hostco',    'label' => 'Host.co',          'type' => 'link', 'chip' => 'Store', 'prefix' => 'https://app.thehost.co/store/'], 
+        ['key' => 'pricelabs', 'label' => 'PriceLabs',        'type' => 'text'],
+        ['key' => 'compset',   'label' => 'CompSet',          'type' => 'link', 'chip' => 'CompSet'],
+        ['key' => 'hostco',    'label' => 'Host.co',          'type' => 'link', 'chip' => 'Store'],
         
+        ['key' => 'name',      'label' => 'Property',         'type' => 'title'], 
 
+       
     ];
 }
 
@@ -126,7 +124,7 @@ function lbs_cleaners_columns() {
         ['key' => 'close',     'label' => 'Close CRM',   'type' => 'link', 'chip' => 'CRM'],
         ['key' => 'address',    'label' => 'Address',   'type' => 'text', 'chip' => 'Folder'],
         ['key' => 'turnover',    'label' => 'Turnover',     'type' => 'text', 'chip' => 'Folder'],
-       // ['key' => 'phone',    'label' => 'Phone',       'type' => 'text', 'chip' => 'Folder'],
+        ['key' => 'phone',    'label' => 'Phone',       'type' => 'text', 'chip' => 'Folder'],
     ];
 }
 
@@ -138,16 +136,10 @@ function lbs_contractors_columns() {
         ['key' => 'title',   'label' => 'Trade',     'type' => 'text'],
         ['key' => 'address', 'label' => 'Address',   'type' => 'text'],
         ['key' => 'close',   'label' => 'Close CRM', 'type' => 'link', 'chip' => 'CRM'],
-      //  ['key' => 'phone',   'label' => 'Phone',     'type' => 'text'],
+        ['key' => 'phone',   'label' => 'Phone',     'type' => 'text'],
         ['key' => 'payment', 'label' => 'Payment',   'type' => 'text'],
         ['key' => 'note',    'label' => 'Note',      'type' => 'text'],
-    ];
-}
-
-function lbs_contractors_panel_extra_columns() {
-    return [
-        ['key' => 'phone', 'label' => 'Phone', 'type' => 'text'],
-        ['key' => 'url',   'label' => 'URL',   'type' => 'text'],
+        ['key' => 'url',    'label' => 'URL',      'type' => 'text'], 
     ];
 }
 
@@ -166,34 +158,6 @@ function lbs_dedupe_columns($columns) {
     }
     return $out;
 }
-
-
-
-function lbs_resolve_column_url($value, $col) {
-    $value = is_string($value) ? trim($value) : '';
-
-    if ($value === '') {
-        return '';
-    }
-
-    // Preserve values that are already complete URLs.
-    if (preg_match('#^https?://#i', $value)) {
-        return $value;
-    }
-
-    if (!empty($col['template'])) {
-        return str_replace('{value}', $value, $col['template']);
-    }
-
-    if (!empty($col['prefix'])) {
-        return $col['prefix'] . $value;
-    }
-
-    return '';
-}
-
-
-
 
 // --- Render a cell for num / title / text / link types (shared by all tables) ---
 function lbs_render_generic_cell($row, $col) {
@@ -218,26 +182,16 @@ function lbs_render_generic_cell($row, $col) {
             echo '<td class="ph-cell ph-title" data-field="' . esc_attr($key) . '"' . $rawAttr . '><span class="ph-title-icon">▤</span>' . esc_html($value) . '</td>';
             break;
 
-         
-
         case 'link':
-            $href = lbs_resolve_column_url($value, $col);
-
-            if ($href !== '') {
+            if (preg_match('#^https?://#i', $value)) {
                 $chip = isset($col['chip']) ? $col['chip'] : 'Open';
-
-                echo '<td class="ph-cell" data-field="' . esc_attr($key) . '"' . $rawAttr . '>';
-                echo '<a class="ph-chip" href="' . esc_url($href) . '" target="_blank" rel="noopener noreferrer">';
-                echo esc_html($chip) . ' <span class="ph-chip-arrow">&#8599;</span>';
-                echo '</a>';
-                echo '</td>';
+                echo '<td class="ph-cell" data-field="' . esc_attr($key) . '"' . $rawAttr . '><a class="ph-chip" href="' . esc_url($value) . '" target="_blank" rel="noopener noreferrer">'
+                    . esc_html($chip) . ' <span class="ph-chip-arrow">&#8599;</span></a></td>';
             } else {
-                echo '<td class="ph-cell ph-text" data-field="' . esc_attr($key) . '"' . $rawAttr . ' title="' . esc_attr($value) . '">';
-                echo esc_html($value);
-                echo '</td>';
+                // Not a full URL (e.g. a bare folder ID) — show as plain text.
+                echo '<td class="ph-cell ph-text" data-field="' . esc_attr($key) . '"' . $rawAttr . ' title="' . esc_attr($value) . '">' . esc_html($value) . '</td>';
             }
             break;
- 
 
         case 'text':
         default:
@@ -386,11 +340,7 @@ function lbs_render_prop_hub_page() {
         'num'
     );
     $cleanerData = lbs_fetch_table_rows('pm_cleaners', $tables['pm_cleaners']['columns'], 'id');
-    $contractorData = lbs_fetch_table_rows(
-        'pm_contractors',
-        array_merge($tables['pm_contractors']['columns'], $tables['pm_contractors']['panel_extra']),
-        'id'
-    );
+    $contractorData = lbs_fetch_table_rows('pm_contractors', $tables['pm_contractors']['columns'], 'id');
 
     $statusNonce = wp_create_nonce('lbs_prop_hub_status');
     $fieldNonce = wp_create_nonce('lbs_prop_hub_field');
@@ -469,7 +419,7 @@ function lbs_render_prop_hub_page() {
 
         <?php
         lbs_render_table_section('Cleaners', 'pm_cleaners', 'id', $cleanerData['rows'], $tables['pm_cleaners']['columns'], $cleanerData['error'], 'lbs_render_generic_cell');
-        lbs_render_table_section('Contractors', 'pm_contractors', 'id', $contractorData['rows'], $tables['pm_contractors']['columns'], $contractorData['error'], 'lbs_render_generic_cell', $tables['pm_contractors']['panel_extra']);
+        lbs_render_table_section('Contractors', 'pm_contractors', 'id', $contractorData['rows'], $tables['pm_contractors']['columns'], $contractorData['error'], 'lbs_render_generic_cell');
         ?>
     </div>
 

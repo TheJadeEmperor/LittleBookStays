@@ -4,11 +4,36 @@ require_once get_stylesheet_directory() . '/pm/prop_hub.php';
 require_once get_stylesheet_directory() . '/pm/power_dialer.php';
 require_once get_stylesheet_directory() . '/pm/user_roles.php';
 
+// --- Staging convenience: keep the WP login session alive longer ---
+// Default WP behavior: 2 days without "Remember Me", 14 days with it.
+// This extends both so we don't get bounced to the login screen constantly
+// while working on littlebookstays.test.
+add_filter('auth_cookie_expiration', function ($length, $user_id, $remember) {
+    return $remember ? 30 * DAY_IN_SECONDS : 14 * DAY_IN_SECONDS;
+}, 10, 3);
+
  
+
+// --- Register the admin menu page ---
+add_action('admin_menu', 'lbs_add_prop_hub_page');
+
+function lbs_add_prop_hub_page() {
+    add_menu_page(
+        'Property Hub',
+        'Property Hub',
+        'manage_options',
+        'lbs-prop-hub',
+        'lbs_render_prop_hub_page',
+        'dashicons-admin-multisite',
+        4
+    );
+}
+
+
+
 //echo get_template_directory_uri() . '/style.css';
 wp_enqueue_style('parent-style', get_template_directory_uri() . '/style.css');
 
- 
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Close CRM — Lead Lookup admin page
