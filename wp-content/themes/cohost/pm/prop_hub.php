@@ -76,7 +76,8 @@ function lbs_prop_hub_panel_extra_columns() {
         ['key' => 'door_lock_pw',      'label' => 'SmartLock PW',         'type' => 'title'],
         ['key' => 'lockbox',      'label' => 'Lockbox',         'type' => 'title'],
         ['key' => 'trash',      'label' => 'Trash',         'type' => 'title'],
-        ['key' => 'auth_amt',      'label' => 'Auth Amt',         'type' => 'title'],
+        ['key' => 'prop_notes',      'label' => 'Prop Notes',         'type' => 'text'],
+
     ];
 }
 
@@ -93,20 +94,21 @@ function lbs_prop_hub_columns() {
         ['key' => 'name',      'label' => 'Property',         'type' => 'title'],
         ['key' => 'close',     'label' => 'Close CRM',        'type' => 'link', 'chip' => 'CRM'],
         ['key' => 'zip',       'label' => 'ZIP',              'type' => 'text'],
+        
         ['key' => 'a_direct',  'label' => 'BNB Direct',       'type' => 'link', 'chip' => 'Listing'],
         ['key' => 'turno',     'label' => 'Turno',            'type' => 'link', 'chip' => 'Turno'],
-        ['key' => 'gdrive',    'label' => 'Google Drive',     'type' => 'link', 'chip' => 'Folder', 'prefix' => 'https://drive.google.com/drive/folders/'],
-        ['key' => 'hosp',      'label' => 'Hospitable ID',    'type' => 'text'],
-        ['key' => 'hosp_msg',  'label' => 'Messaging Rules',  'type' => 'link', 'chip' => 'Rules'],
-        ['key' => 'a_direct',   'label' => 'Airbnb Listing ID','type' => 'text'],
+        ['key' => 'gdrive',    'label' => 'Google Drive',     'type' => 'link', 'chip' => 'GDrive', 'prefix' => 'https://drive.google.com/drive/folders/'],
+        ['key' => 'hosp',      'label' => 'Hospitable ID',    'type' => 'link', 'chip' => 'H Calendar', 'prefix' => 'https://my.hospitable.com/calendar/property/'], 
+        ['key' => 'hosp',      'label' => 'Hospitable Calendar', 'type' => 'link', 'chip' => 'Calendar', 'prefix' => 'https://my.hospitable.com/calendar/property/'],
+        ['key' => 'hosp_msg',  'label' => 'Messaging Rules',  'type' => 'link', 'chip' => 'H Rules'],
+        ['key' => 'h_custom_code',  'label' => 'Custom Code',  'type' => 'link', 'chip' => 'H Custom Codes'],
         
-
         ['key' => 'name',      'label' => 'Property',         'type' => 'title'], 
         ['key' => 'v_list',    'label' => 'VRBO Listing',     'type' => 'link', 'chip' => 'Listing'],
         ['key' => 'v_ins',     'label' => 'VRBO Insurance',   'type' => 'link', 'chip' => 'Insurance'],
         ['key' => 'v_fees',    'label' => 'VRBO Fees',        'type' => 'link', 'chip' => 'Fees'],
         ['key' => 'v_live',    'label' => 'VRBO Live',        'type' => 'link', 'chip' => 'Live'],
-        ['key' => 'pricelabs', 'label' => 'PriceLabs',        'type' => 'link', 'chip' => 'Pricing', 'template' => 'https://app.pricelabs.co/pricing?listings={value}&pms_name=smartbnb&open_calendar=true'],
+        ['key' => 'pricelabs', 'label' => 'PriceLabs',        'type' => 'link', 'chip' => 'PriceLabs', 'template' => 'https://app.pricelabs.co/pricing?listings={value}&pms_name=smartbnb&open_calendar=true'],
         ['key' => 'compset',   'label' => 'CompSet',          'type' => 'link', 'chip' => 'CompSet', 'prefix' => 'https://app.pricelabs.co/reports/'],
         ['key' => 'hostco',    'label' => 'Host.co',          'type' => 'link', 'chip' => 'Store', 'prefix' => 'https://app.thehost.co/store/'], 
         
@@ -138,7 +140,6 @@ function lbs_contractors_columns() {
         ['key' => 'title',   'label' => 'Trade',     'type' => 'text'],
         ['key' => 'address', 'label' => 'Address',   'type' => 'text'],
         ['key' => 'close',   'label' => 'Close CRM', 'type' => 'link', 'chip' => 'CRM'],
-      //  ['key' => 'phone',   'label' => 'Phone',     'type' => 'text'],
         ['key' => 'payment', 'label' => 'Payment',   'type' => 'text'],
         ['key' => 'note',    'label' => 'Note',      'type' => 'text'],
     ];
@@ -192,6 +193,10 @@ function lbs_resolve_column_url($value, $col) {
     return '';
 }
 
+function lbs_normalize_text_value($value) {
+    return is_string($value) ? str_replace("\\'", "'", $value) : $value;
+}
+
 
 
 
@@ -199,7 +204,7 @@ function lbs_resolve_column_url($value, $col) {
 function lbs_render_generic_cell($row, $col) {
     $key = $col['key'];
     $value = isset($row[$key]) ? $row[$key] : null;
-    $value = is_string($value) ? trim($value) : $value;
+    $value = is_string($value) ? trim(lbs_normalize_text_value($value)) : $value;
 
     if ($col['type'] === 'num') {
         echo '<td class="ph-cell ph-num" data-field="' . esc_attr($key) . '">' . esc_html($value) . '</td>';
@@ -321,7 +326,7 @@ function lbs_render_table_body($sqlTable, $pkColumn, $rows, $columns, $dbError, 
         <div class="notice notice-error"><p>Could not load <?= esc_html($heading) ?>: <?= esc_html($dbError) ?></p></div>
     <?php elseif (empty($rows)): ?>
         <div class="ph-empty-state">No <?= esc_html(strtolower($heading)) ?> yet.</div>
-    <?php else: ?>
+    <?php else: ?>    
         <div class="ph-table-shell">
             <div class="ph-table-scroll">
                 <table class="ph-table">
@@ -340,7 +345,7 @@ function lbs_render_table_body($sqlTable, $pkColumn, $rows, $columns, $dbError, 
                                 $extraData = [];
                                 foreach ($panelExtraColumns as $ecol) {
                                     $v = isset($row[$ecol['key']]) ? $row[$ecol['key']] : '';
-                                    $extraData[$ecol['key']] = is_string($v) ? trim($v) : $v;
+                                    $extraData[$ecol['key']] = is_string($v) ? trim(lbs_normalize_text_value($v)) : $v;
                                 }
                                 $panelExtraAttr = ' data-panel-extra="' . esc_attr(wp_json_encode($extraData)) . '"';
                             }
@@ -527,7 +532,7 @@ function lbs_update_row_field() {
     $pk = isset($_POST['pk']) ? sanitize_text_field($_POST['pk']) : '';
     $pkValue = isset($_POST['pk_value']) ? (int) $_POST['pk_value'] : 0;
     $field = isset($_POST['field']) ? sanitize_text_field($_POST['field']) : '';
-    $value = isset($_POST['value']) ? sanitize_text_field($_POST['value']) : '';
+    $value = isset($_POST['value']) ? sanitize_text_field(wp_unslash($_POST['value'])) : '';
 
     $tables = lbs_prop_hub_tables();
 

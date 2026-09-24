@@ -26,6 +26,23 @@
     // Mirrors lbs_render_generic_cell() in PHP — builds the inner
     // HTML for a cell/value given its column definition + raw value,
     // so the table cell and the panel field always render the same way.
+    function resolveColumnUrl(value, col) {
+        value = (value == null) ? '' : String(value).trim();
+        if (value === '') {
+            return '';
+        }
+        if (/^https?:\/\//i.test(value)) {
+            return value;
+        }
+        if (col && col.template) {
+            return col.template.replace('{value}', value);
+        }
+        if (col && col.prefix) {
+            return col.prefix + value;
+        }
+        return '';
+    }
+
     function renderValueHtml(col, value) {
         value = (value == null) ? '' : String(value).trim();
 
@@ -39,9 +56,10 @@
             return '<span class="ph-title-icon">▤</span>' + escapeHtml(value);
         }
         if (col.type === 'link') {
-            if (/^https?:\/\//i.test(value)) {
+            const href = resolveColumnUrl(value, col);
+            if (href !== '') {
                 const chip = col.chip || 'Open';
-                return '<a class="ph-chip" href="' + escapeHtml(value) + '" target="_blank" rel="noopener noreferrer">'
+                return '<a class="ph-chip" href="' + escapeHtml(href) + '" target="_blank" rel="noopener noreferrer">'
                     + escapeHtml(chip) + ' <span class="ph-chip-arrow">&#8599;</span></a>';
             }
             return escapeHtml(value);
@@ -155,6 +173,14 @@
         document.querySelectorAll('.ph-status-menu.open').forEach(function (m) {
             m.classList.remove('open');
         });
+    }
+
+    function getRecordRows(tr) {
+        const group = tr && tr.dataset && tr.dataset.recordGroup;
+        if (!group) {
+            return [tr];
+        }
+        return Array.from(document.querySelectorAll('.ph-row[data-record-group="' + group + '"]'));
     }
 
     // Wire up the status dropdowns rendered server-side in the tables.
@@ -364,15 +390,25 @@
 
                 const currentSpan = valueWrap.querySelector('.ph-panel-field-display');
                 const currentText = currentSpan ? currentSpan.dataset.raw || rawValue : rawValue;
+                const useTextarea = col && (col.key === 'trash' || col.key === 'prop_notes');
 
-                const input = document.createElement('input');
-                input.type = 'text';
-                input.className = 'ph-panel-input';
+                const input = useTextarea ? document.createElement('textarea') : document.createElement('input');
+                if (useTextarea) {
+                    input.rows = 4;
+                    input.className = 'ph-panel-input ph-panel-textarea';
+                } else {
+                    input.type = 'text';
+                    input.className = 'ph-panel-input';
+                }
                 input.value = rawValue;
                 valueWrap.innerHTML = '';
                 valueWrap.appendChild(input);
                 input.focus();
-                input.select();
+                if (useTextarea) {
+                    input.setSelectionRange(input.value.length, input.value.length);
+                } else {
+                    input.select();
+                }
 
                 function finishEdit() {
                     const newValue = input.value.trim();
@@ -395,11 +431,20 @@
 
                 input.addEventListener('blur', finishEdit);
                 input.addEventListener('keydown', function (e2) {
+                    if (e2.key === 'Escape') {
+                        input.value = rawValue;
+                        input.blur();
+                        return;
+                    }
+                    if (useTextarea) {
+                        if ((e2.metaKey || e2.ctrlKey) && e2.key === 'Enter') {
+                            e2.preventDefault();
+                            input.blur();
+                        }
+                        return;
+                    }
                     if (e2.key === 'Enter') {
                         e2.preventDefault();
-                        input.blur();
-                    } else if (e2.key === 'Escape') {
-                        input.value = rawValue;
                         input.blur();
                     }
                 });
@@ -626,17 +671,19 @@
         }
 
         function openPanel(tr) {
-            const table = tr.dataset.table;
-            const pk = tr.dataset.pk;
-            const pkValue = tr.dataset.pkValue;
+            const recordRows = getRecordRows(tr);
+            const primaryRow = recordRows[0] || tr;
+            const table = primaryRow.dataset.table;
+            const pk = primaryRow.dataset.pk;
+            const pkValue = primaryRow.dataset.pkValue;
             const fields = PANEL_FIELDS[table] || [];
             const breakKey = PANEL_COLUMN_BREAKS[table];
 
             // Panel-only fields (e.g. WiFi) have no <td> in the table — their
             // values travel with the row as a JSON blob instead.
             let panelExtra = {};
-            if (tr.dataset.panelExtra) {
-                try { panelExtra = JSON.parse(tr.dataset.panelExtra); } catch (e) { panelExtra = {}; }
+            if (primaryRow.dataset.panelExtra) {
+                try { panelExtra = JSON.parse(primaryRow.dataset.panelExtra); } catch (e) { panelExtra = {}; }
             }
 
             panelBody.innerHTML = '';
@@ -662,7 +709,11 @@
             let pastBreak = false;
 
             fields.forEach(function (col) {
-                const td = tr.querySelector('.ph-cell[data-field="' + col.key + '"]');
+                let td = null;
+                for (let i = 0; i < recordRows.length; i++) {
+                    td = recordRows[i].querySelector('.ph-cell[data-field="' + col.key + '"]');
+                    if (td) break;
+                }
                 let rawValue;
                 if (col.type === 'status') {
                     const trigger = td ? td.querySelector('.ph-status-trigger') : null;
@@ -695,7 +746,9 @@
             document.querySelectorAll('.ph-row.ph-row-active').forEach(function (r) {
                 r.classList.remove('ph-row-active');
             });
-            tr.classList.add('ph-row-active');
+            recordRows.forEach(function (row) {
+                row.classList.add('ph-row-active');
+            });
 
             panel.classList.add('open');
             overlay.classList.add('open');
@@ -717,12 +770,19 @@
         function applyPropFilter(filter) {
             const rows = propSection.querySelectorAll('.ph-row');
             let visible = 0;
+            const seenGroups = new Set();
 
             rows.forEach(function (tr) {
                 const isCancelled = tr.dataset.status === '0';
                 const show = filter === 'active' ? !isCancelled : isCancelled;
                 tr.style.display = show ? '' : 'none';
-                if (show) visible++;
+                if (show) {
+                    const group = tr.dataset.recordGroup || tr.dataset.pkValue;
+                    if (!seenGroups.has(group)) {
+                        seenGroups.add(group);
+                        visible++;
+                    }
+                }
             });
 
             if (propCount) {

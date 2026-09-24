@@ -3,6 +3,7 @@ require_once get_stylesheet_directory() . '/pm/generate_statement.php';
 require_once get_stylesheet_directory() . '/pm/prop_hub.php';
 require_once get_stylesheet_directory() . '/pm/power_dialer.php';
 require_once get_stylesheet_directory() . '/pm/user_roles.php';
+require_once get_stylesheet_directory() . '/pm/rev_report.php';
 
 // --- Staging convenience: keep the WP login session alive longer ---
 // Default WP behavior: 2 days without "Remember Me", 14 days with it.
@@ -12,7 +13,21 @@ add_filter('auth_cookie_expiration', function ($length, $user_id, $remember) {
     return $remember ? 30 * DAY_IN_SECONDS : 14 * DAY_IN_SECONDS;
 }, 10, 3);
 
- 
+
+
+// --- Register the admin menu page under Sales Training ---
+add_action('admin_menu', 'rev_report_page');
+
+function rev_report_page() {
+    add_submenu_page(
+        'sales-training',
+        'Rev Report',
+        'Rev Report',
+        'manage_options',
+        'rev-report',
+        'lbs_render_rev_report'
+    );
+}
 
 // --- Register the admin menu page ---
 add_action('admin_menu', 'lbs_add_prop_hub_page');
@@ -304,8 +319,7 @@ function lbs_sop_page () {
     <h1>Owner Statements</h1>
 
     <p><a target="_BLANK" href="https://drive.google.com/drive/folders/16iPNF0a_vttToYR5YfBk5WB40BwZDsGk?usp=sharing">https://drive.google.com/drive/folders/16iPNF0a_vttToYR5YfBk5WB40BwZDsGk?usp=sharing</a></p>
-
-    
+   
 
     <h2><strong>Instructions - do once a month</strong></h2>
     <ol>
@@ -324,7 +338,6 @@ function lbs_sop_page () {
       <li><p>IF there are any guest refunds, it will show in Hospitable</p></li>
     </ol>
     
-
 
     <?php
 }
@@ -485,37 +498,7 @@ function lbs_render_onboarding_page() {
         </div>
     </div>
 
-    <style>
-        .kc-progress { font-size: 13px; color: #777; margin-bottom: 8px; }
-        .kc-toc { background: #f7f7f7; border: 1px solid #e5e5e5; border-radius: 8px; padding: 14px 18px; margin-bottom: 28px; max-width: 900px; }
-        .kc-toc-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: #888; margin-bottom: 8px; }
-        .kc-toc-columns { column-count: 2; column-gap: 28px; }
-        .kc-toc a { display: block; font-size: 14px; line-height: 1.7; color: #333; text-decoration: none; break-inside: avoid; }
-        .kc-toc a:hover { text-decoration: underline; }
-        .kc-toc a.kc-toc-subsection { margin-left: 18px; color: #666; font-size: 13px; }
-        #kc-task-list { column-count: 2; column-gap: 36px; max-width: 1200px; }
-        .kc-section { font-size: 19px; margin-top: 40px; margin-bottom: 4px; padding-bottom: 6px; border-bottom: 2px solid #333; break-inside: avoid; display: flex; align-items: baseline; gap: 8px; }
-        .kc-subsection { font-size: 15px; margin-top: 18px; margin-bottom: 4px; color: #555; text-transform: uppercase; letter-spacing: .03em; break-inside: avoid; }
-        .kc-back-to-toc { font-size: 12px; font-weight: normal; text-transform: none; color: #999; text-decoration: none; }
-        .task { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 14px; break-inside: avoid; }
-        .task.nested { margin-left: 28px; border-bottom: 1px dashed #eee; }
-        .task input[type="checkbox"] { width: 17px; height: 17px; cursor: pointer; flex-shrink: 0; }
-        .task-label-wrap { flex: 1; min-height: 20px; cursor: text; }
-        .task-label { cursor: text; }
-        .task-label.checked { text-decoration: line-through; color: #999; }
-        .task-label a { color: #2271b1; text-decoration: none; }
-        .task-label a:hover { text-decoration: underline; }
-        .task-label-input {
-            width: 100%;
-            font-size: 14px;
-            font-family: inherit;
-            border: 1px solid #999;
-            border-radius: 3px;
-            padding: 2px 6px;
-            box-sizing: border-box;
-        }
-    </style>
-
+    
     <script>
     (function () {
         const ajaxUrl = <?= json_encode($ajaxUrl) ?>;
