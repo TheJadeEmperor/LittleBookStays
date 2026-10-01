@@ -58,7 +58,7 @@
 								
 								<li><a target="_BLANK" href="./blog/" class="icon brands alt fa-blogger" ><span class="label">Blog</span></a></li>
 							
-								<li><a target="_BLANK" href="tel:<?= esc_attr(get_option('lbs_phone')) ?>" class="icon solid alt fa-phone"><span class="label">Phone</span></a></li> 
+								<li><a target="_BLANK" href="tel:<?=$adminPhone ?>" class="icon solid alt fa-phone"><span class="label">Phone</span></a></li> 
 							</ul> 
        
 							<ul class="icons">

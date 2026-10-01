@@ -1,5 +1,7 @@
 <?php
 $adminEmail = 'LittleBookStays@gmail.com'; 
+$adminPhone = '620-678-9482';
+
 
 $keywords1 = $alt = 'Airbnb Property Management North Carolina';
 $keywords2 = 'Vacation Rental Property Management North Carolina';
