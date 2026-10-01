@@ -95,24 +95,30 @@ function lbs_prop_hub_columns() {
         ['key' => 'close',     'label' => 'Close CRM',        'type' => 'link', 'chip' => 'CRM'],
         ['key' => 'zip',       'label' => 'ZIP',              'type' => 'text'],
         
-        ['key' => 'a_direct',  'label' => 'BNB Direct',       'type' => 'link', 'chip' => 'Listing'],
-        ['key' => 'turno',     'label' => 'Turno',            'type' => 'link', 'chip' => 'Turno'],
-        ['key' => 'gdrive',    'label' => 'Google Drive',     'type' => 'link', 'chip' => 'GDrive', 'prefix' => 'https://drive.google.com/drive/folders/'],
-        ['key' => 'hosp',      'label' => 'Hospitable ID',    'type' => 'link', 'chip' => 'H Calendar', 'prefix' => 'https://my.hospitable.com/calendar/property/'], 
-        ['key' => 'hosp',      'label' => 'Hospitable Calendar', 'type' => 'link', 'chip' => 'Calendar', 'prefix' => 'https://my.hospitable.com/calendar/property/'],
-        ['key' => 'hosp_msg',  'label' => 'Messaging Rules',  'type' => 'link', 'chip' => 'H Rules'],
-        ['key' => 'h_custom_code',  'label' => 'Custom Code',  'type' => 'link', 'chip' => 'H Custom Codes'],
+        //Airbnb Atrocity 
+        ['key' => 'a_direct',  'label' => 'BNB Direct',       'type' => 'link', 'chip' => 'Direct'],
+        ['key' => 'a_listing',    'label' => 'BNB Live',         'type' => 'link', 'chip' => 'Live'],
+        ['key' => 'a_listing',      'label' => 'Discounts', 'type' => 'link', 'chip' => 'Discounts', 'template' => 'https://www.airbnb.com/multicalendar/{value}/discounts'],
+        ['key' => 'a_listing',      'label' => 'Amenities', 'type' => 'link', 'chip' => 'Amen', 'template' => 'https://www.airbnb.com/hosting/listings/editor/{value}/details/amenities'],
+
         
-        ['key' => 'name',      'label' => 'Property',         'type' => 'title'], 
-        ['key' => 'v_list',    'label' => 'VRBO Listing',     'type' => 'link', 'chip' => 'Listing'],
+        ['key' => 'turno',     'label' => 'Turno',            'type' => 'link', 'chip' => 'Turno'],
+        ['key' => 'gdrive',    'label' => 'Google Drive',     'type' => 'link', 'chip' => 'GDrive', 'prefix' => 'https://drive.google.com/drive/folders/'], 
+        
+        //Hospital 
+        ['key' => 'hosp',      'label' => 'Hospitable ID',    'type' => 'link', 'chip' => 'H Calendar', 'prefix' => 'https://my.hospitable.com/calendar/property/'], 
+        ['key' => 'hosp',      'label' => 'Hospitable Prop', 'type' => 'link', 'chip' => 'H Prop', 'template' => 'https://my.hospitable.com/properties/property/{value}/details/essentials'],
+
+        //VRBO Villains
         ['key' => 'v_ins',     'label' => 'VRBO Insurance',   'type' => 'link', 'chip' => 'Insurance'],
         ['key' => 'v_fees',    'label' => 'VRBO Fees',        'type' => 'link', 'chip' => 'Fees'],
         ['key' => 'v_live',    'label' => 'VRBO Live',        'type' => 'link', 'chip' => 'Live'],
+       
+        
         ['key' => 'pricelabs', 'label' => 'PriceLabs',        'type' => 'link', 'chip' => 'PriceLabs', 'template' => 'https://app.pricelabs.co/pricing?listings={value}&pms_name=smartbnb&open_calendar=true'],
         ['key' => 'compset',   'label' => 'CompSet',          'type' => 'link', 'chip' => 'CompSet', 'prefix' => 'https://app.pricelabs.co/reports/'],
         ['key' => 'hostco',    'label' => 'Host.co',          'type' => 'link', 'chip' => 'Store', 'prefix' => 'https://app.thehost.co/store/'], 
         
-
     ];
 }
 
@@ -159,10 +165,11 @@ function lbs_dedupe_columns($columns) {
     $seen = [];
     $out = [];
     foreach ($columns as $col) {
-        if (isset($seen[$col['key']])) {
+        $identity = $col['key'] . "\0" . $col['label'];
+        if (isset($seen[$identity])) {
             continue;
         }
-        $seen[$col['key']] = true;
+        $seen[$identity] = true;
         $out[] = $col;
     }
     return $out;
