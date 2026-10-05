@@ -217,10 +217,7 @@ function systems_training_pg() {
     <p>Cold Call Scripts</p>
 
     <p><a target="_BLANK" href="https://drive.google.com/drive/folders/1vYQLa272dzjUdnllnQyAd-0k-mgxkuMJ?usp=drive_link">https://drive.google.com/drive/folders/1vYQLa272dzjUdnllnQyAd-0k-mgxkuMJ?usp=drive_link</a></p>
-
-    <p>Dialing training vids</p>
-    <p><a target="_BLANK" href="https://drive.google.com/drive/folders/1bqj6vWUCHvW9Wk5KSSCcWHB0NK7BFCQH?usp=drive_link">https://drive.google.com/drive/folders/1bqj6vWUCHvW9Wk5KSSCcWHB0NK7BFCQH?usp=drive_link</a></p>
-
+ 
 
     <h1>How to use Close</h1>
 
