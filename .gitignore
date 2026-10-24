@@ -4,7 +4,9 @@ wp-config.php
 wp-config-sample.php
 wp-content/themes/cohost/close/apiKey.php
 
-index.php
+/index.php
+wp-content/index.php
+wp-content/themes/index.php
 license.txt
 readme.html
 wp-activate.php
