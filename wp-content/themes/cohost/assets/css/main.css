@@ -4096,3 +4096,53 @@ input, select, textarea {
 		box-shadow: 0 4px 8px rgba(48, 50, 212, 0.2); /* Add a subtle shadow for emphasis */
  
 	}
+
+.client-reviews {
+	max-width: 760px;
+	margin: 0 auto 3em;
+}
+
+.client-reviews__track {
+	display: flex;
+	overflow-x: auto;
+	scroll-snap-type: x mandatory;
+	scroll-behavior: smooth;
+	scrollbar-width: none;
+	-webkit-overflow-scrolling: touch;
+}
+
+.client-reviews__track::-webkit-scrollbar {
+	display: none;
+}
+
+.client-reviews__slide {
+	display: flex;
+	flex: 0 0 100%;
+	align-items: center;
+	justify-content: center;
+	scroll-snap-align: start;
+}
+
+.client-reviews__slide img {
+	display: block;
+	width: 100%;
+	height: auto;
+	max-height: 560px;
+	object-fit: contain;
+	background: #fff;
+}
+
+.client-reviews__controls {
+	display: flex;
+	justify-content: space-between;
+	margin-top: 1em;
+}
+
+.client-reviews__controls button {
+	min-width: 110px;
+}
+
+.client-reviews__controls button:disabled {
+	opacity: 0.45;
+	cursor: default;
+}
