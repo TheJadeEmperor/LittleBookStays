@@ -50,7 +50,7 @@ function lbs_add_prop_hub_page() {
     add_menu_page(
         'Property Hub',
         'Property Hub',
-        'manage_options',
+        'lbs_view_admin_pages',
         'lbs-prop-hub',
         'lbs_render_prop_hub_page',
         'dashicons-admin-multisite',

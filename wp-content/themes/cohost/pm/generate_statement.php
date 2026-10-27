@@ -26,7 +26,7 @@ function lbs_add_owner_statement_page() {
     add_menu_page(
         'Owner Statement',
         'Owner Statement',
-        'manage_options',
+        'lbs_view_admin_pages',
         'lbs-owner-statement',
         'lbs_render_owner_statement_page',
         'dashicons-media-spreadsheet',
@@ -52,7 +52,7 @@ function lbs_owner_statement_company() {
 // WordPress's own admin header/nav/footer HTML on this page.
 // ---------------------------------------------------------------
 function lbs_render_owner_statement_page() {
-    if (!current_user_can('manage_options')) {
+    if (!current_user_can('lbs_view_admin_pages')) {
         return;
     }
 
@@ -326,7 +326,7 @@ function lbs_render_owner_statement_page() {
 add_action('admin_post_lbs_generate_owner_statement', 'lbs_generate_owner_statement');
 
 function lbs_generate_owner_statement() {
-    if (!current_user_can('manage_options')) {
+    if (!current_user_can('lbs_view_admin_pages')) {
         wp_die('Not allowed');
     }
     check_admin_referer('lbs_owner_statement', 'lbs_owner_statement_nonce');

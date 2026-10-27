@@ -135,7 +135,7 @@ Every property gets visited. Every market gets analyzed. Every decision gets que
 							<div class="content">
 							<div class="inner">
 								<header class="major">
-									<h3 id="marketing">Revenue Strategy</h3>
+									<h3 id="marketing">Dynamic Pricing</h3>
 								</header>
 								<p>Companies like Evolve and Vacasa value occupancy over value, slashing your nightly rates just to fill your calendar. While it gives you the illusion of profit, you are actually leaving money on the table while taking on maximum wear and tear.</p>
 

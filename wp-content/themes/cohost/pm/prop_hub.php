@@ -377,7 +377,7 @@ function lbs_render_table_body($sqlTable, $pkColumn, $rows, $columns, $dbError, 
 
 // --- Main page render callback ---
 function lbs_render_prop_hub_page() {
-    if (!current_user_can('manage_options')) {
+    if (!current_user_can('lbs_view_admin_pages')) {
         return;
     }
 
@@ -504,7 +504,7 @@ add_action('wp_ajax_lbs_update_prop_status', 'lbs_update_prop_status');
 function lbs_update_prop_status() {
     check_ajax_referer('lbs_prop_hub_status', 'nonce');
 
-    if (!current_user_can('manage_options')) {
+    if (!current_user_can('lbs_view_admin_pages')) {
         wp_send_json_error(['error' => 'Not allowed'], 403);
     }
 
@@ -531,7 +531,7 @@ add_action('wp_ajax_lbs_update_row_field', 'lbs_update_row_field');
 function lbs_update_row_field() {
     check_ajax_referer('lbs_prop_hub_field', 'nonce');
 
-    if (!current_user_can('manage_options')) {
+    if (!current_user_can('lbs_view_admin_pages')) {
         wp_send_json_error(['error' => 'Not allowed'], 403);
     }
 
@@ -573,7 +573,7 @@ add_action('wp_ajax_lbs_get_row_links', 'lbs_get_row_links');
 function lbs_get_row_links() {
     check_ajax_referer('lbs_prop_hub_links', 'nonce');
 
-    if (!current_user_can('manage_options')) {
+    if (!current_user_can('lbs_view_admin_pages')) {
         wp_send_json_error(['error' => 'Not allowed'], 403);
     }
 
@@ -618,7 +618,7 @@ add_action('wp_ajax_lbs_add_prop_cleaner_link', 'lbs_add_prop_cleaner_link');
 function lbs_add_prop_cleaner_link() {
     check_ajax_referer('lbs_prop_hub_links', 'nonce');
 
-    if (!current_user_can('manage_options')) {
+    if (!current_user_can('lbs_view_admin_pages')) {
         wp_send_json_error(['error' => 'Not allowed'], 403);
     }
 
@@ -661,7 +661,7 @@ add_action('wp_ajax_lbs_remove_prop_cleaner_link', 'lbs_remove_prop_cleaner_link
 function lbs_remove_prop_cleaner_link() {
     check_ajax_referer('lbs_prop_hub_links', 'nonce');
 
-    if (!current_user_can('manage_options')) {
+    if (!current_user_can('lbs_view_admin_pages')) {
         wp_send_json_error(['error' => 'Not allowed'], 403);
     }
 
