@@ -30,19 +30,6 @@ function sales_admin_menu() {
         3
     );
 
-     add_submenu_page(   
-        'sales-training', //parent slug
-        'Systems Training', //page name
-        'Systems Training', //menu name
-        'lbs_view_admin_pages', // capability required for this menu to be displayed to user
-        'systems-training', // url slug
-        'systems_training_pg', //callback function 
-        '',
-        1 //menu order
-    );
-
-
-
    
  
 
@@ -102,9 +89,6 @@ function sales_training_pg() {
         <p> Written by Hospitable, highly recommended reading for those who want to learn more about the STR industry. This may also give you insights to answer a client's questions. </p> 
     
         <p><a target="_BLANK" href=" https://drive.google.com/file/d/1pggtkz2IsHj7JeJM-7iZvVkj0VC8TwLS/view?usp=drive_link">https://drive.google.com/file/d/1pggtkz2IsHj7JeJM-7iZvVkj0VC8TwLS/view?usp=drive_link</a></p>
-
-
-        
     </div>
 
     <?php 
@@ -114,6 +98,23 @@ function sales_training_pg() {
 function sales_call_pg () {
 
     $salesCall = array( 
+        
+        'NC | Pamela Ingram' => array(
+            'transcript' => '', 
+            'embedCode' => '<iframe src="https://drive.google.com/file/d/1gVaNiZpWrnupKKFLECbgdfy0vlDfRi5B/preview" width="640" height="480" allow="autoplay"></iframe>'
+        ),          
+
+        'Jamestown | NC | Angela Jimeniz' => array(
+            'transcript' => '', 
+            'embedCode' => '<iframe src="https://drive.google.com/file/d/1ZXYejmbHDiscNh-7CKTPUhyw15AKCdmb/preview" width="640" height="480" allow="autoplay"></iframe>'
+        ),          
+
+        '6/3/3 | PA | Qin Tao' => array(
+            'transcript' => '', 
+            'embedCode' => ' <iframe src="https://drive.google.com/file/d/1qw8pWTZQDJ2T3E1paf09ymoRq237bnlf/preview" width="640" height="480" allow="autoplay"></iframe>'
+        ),          
+
+
        '14/6/4.5 | DE | Skeptical Mike Part 01' => array(
             'transcript' => 'https://docs.google.com/document/d/1PS0wcihEOrL72O0nKxaXf6J8Cs9aKGZP/edit?usp=drive_link&ouid=116706145687298652824&rtpof=true&sd=true', 
             'embedCode' => '<iframe width="560" height="315" src="https://www.youtube.com/embed/mjRm3vOO0gU?si=UyOBeZfT3N03ZOMY" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>'
@@ -161,6 +162,8 @@ function sales_call_pg () {
             'transcript' => 'https://docs.google.com/document/d/1x7Yuqxe7JQgx5aH-DlfubmXBIXyUHktQ/edit?usp=drive_link&ouid=116706145687298652824&rtpof=true&sd=true',
             'embedCode' => '<iframe width="560" height="315" src="https://www.youtube.com/embed/K78pWkvlLrc?si=AlXZBYbYHh00sCpr" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>'
         ),
+
+
     );
 
     ?>

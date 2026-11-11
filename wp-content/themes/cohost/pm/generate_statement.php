@@ -36,10 +36,10 @@ function lbs_add_owner_statement_page() {
 
 // --- Company config (fixed header info, same on every statement) ---
 function lbs_owner_statement_company() {
-    return [
+    return [ 
         'name'          => 'LITTLE BOOK STAYS LLC',
         'address_lines' => ['54 State Street,', 'Ste 804 #15431', 'Albany, NY 12207'],
-        'phone_lines'   => ['Phone - Office - 620-678-9482', 'Phone - Mobile - 570-260-6473'],
+        'phone_lines'   => ['Phone - Office - 620-678-9482', 'Phone - Mobile - 828-721-5647'], 
         'footer_left'   => 'LITTLE BOOK STAYS',
         'footer_right'  => 'https://www.littlebookstays.com',
     ];
@@ -84,7 +84,7 @@ function lbs_render_owner_statement_page() {
                     <?php endforeach; ?>
                 </select>
 
-                <label for="cleaning_fee">Cleaning Fee ($)</label>
+                <label for="cleaning_fee">Default Cleaning Fee ($)</label>
                 <input type="number" step="0.01" id="cleaning_fee" name="cleaning_fee"
                        value="<?= esc_attr($cleaning_fee) ?>">
 
@@ -201,14 +201,14 @@ function lbs_render_owner_statement_page() {
         let rowCounter = 0;
 
         // Base Fee = RSVP Fee - Cleaning Fee
-        // Cleaning Fee is shown as its own column (same fixed amount every row)
+        // Cleaning Fee is editable per row; the top-level value is the default.
         // Co-Host Payout = Base Fee * cohost%   (does NOT include the cleaning fee)
         // Owner Payout   = Base Fee - (Base Fee * cohost%)
         // This mirrors the PHP math in the admin-post handler exactly —
         // this copy is only for what's shown on screen before submitting.
         function recalcRow(tr) {
             const fee         = parseFloat(tr.querySelector('.fee-input').value) || 0;
-            const cleaningFee = parseFloat(cleaningFeeInput.value) || 0;
+            const cleaningFee = parseFloat(tr.querySelector('.cleaning-input').value) || 0;
             const cohostPct   = parseFloat(cohostPctInput.value) || 0;
 
             const base          = fee - cleaningFee;
@@ -216,7 +216,6 @@ function lbs_render_owner_statement_page() {
             const owner         = base - cohostPortion;
 
             tr.querySelector('.base-cell').textContent     = '$' + base.toFixed(2);
-            tr.querySelector('.cleaning-cell').textContent = '$' + cleaningFee.toFixed(2);
             tr.querySelector('.cohost-cell').textContent    = '$' + cohostPortion.toFixed(2);
             tr.querySelector('.owner-cell').textContent     = '$' + owner.toFixed(2);
         }
@@ -224,8 +223,15 @@ function lbs_render_owner_statement_page() {
         function recalcTotals() {
             let totalBase = 0, totalCleaning = 0, totalCohost = 0, totalOwner = 0;
             tbody.querySelectorAll('tr').forEach(function (tr) {
+                const fee = parseFloat(tr.querySelector('.fee-input').value) || 0;
+                const date = tr.querySelector('input[type="date"]').value;
+                const name = tr.querySelector('input[type="text"]').value;
+                if (!date && !name && fee === 0) {
+                    return;
+                }
+
                 totalBase     += parseFloat(tr.querySelector('.base-cell').textContent.replace('$', '')) || 0;
-                totalCleaning += parseFloat(tr.querySelector('.cleaning-cell').textContent.replace('$', '')) || 0;
+                totalCleaning += parseFloat(tr.querySelector('.cleaning-input').value) || 0;
                 totalCohost   += parseFloat(tr.querySelector('.cohost-cell').textContent.replace('$', '')) || 0;
                 totalOwner    += parseFloat(tr.querySelector('.owner-cell').textContent.replace('$', '')) || 0;
             });
@@ -241,27 +247,36 @@ function lbs_render_owner_statement_page() {
         }
 
         function addRow() {
-            const idx = rowCounter++; // shared index for all 3 fields in this row
+            const idx = rowCounter++; // shared index for all fields in this row
             const tr = document.createElement('tr');
             tr.innerHTML =
                 '<td><input type="date" name="rows[' + idx + '][date]"></td>' +
                 '<td><input type="text" name="rows[' + idx + '][name]"></td>' +
                 '<td><input type="number" step="0.01" class="fee-input" name="rows[' + idx + '][fee]" value="0"></td>' +
                 '<td class="base-cell">$0.00</td>' +
-                '<td class="cleaning-cell">$0.00</td>' +
+                '<td><input type="number" step="0.01" class="cleaning-input" name="rows[' + idx + '][cleaning]"></td>' +
                 '<td class="cohost-cell">$0.00</td>' +
                 '<td class="owner-cell">$0.00</td>' +
                 '<td><button type="button" class="ols-remove-row-btn">&times;</button></td>';
             tbody.appendChild(tr);
+            tr.querySelector('.cleaning-input').value = cleaningFeeInput.value;
 
             tr.querySelector('.fee-input').addEventListener('input', function () {
                 recalcRow(tr);
                 recalcTotals();
             });
+            tr.querySelector('.cleaning-input').addEventListener('input', function () {
+                recalcRow(tr);
+                recalcTotals();
+            });
+            tr.querySelector('input[type="date"]').addEventListener('input', recalcTotals);
+            tr.querySelector('input[type="text"]').addEventListener('input', recalcTotals);
             tr.querySelector('.ols-remove-row-btn').addEventListener('click', function () {
                 tr.remove();
                 recalcTotals();
             });
+            recalcRow(tr);
+            recalcTotals();
         }
 
         addRowBtn.addEventListener('click', addRow);
@@ -272,8 +287,6 @@ function lbs_render_owner_statement_page() {
             ownerPctInput.value = (100 - cohost).toFixed(2);
             recalcAll();
         });
-        cleaningFeeInput.addEventListener('input', recalcAll);
-
         // --- Expenses table (Category / Item Name / Amount) ---
         const expenseCategories = ['Supplies', 'Cleaning Fees', 'Refund', 'Other Expenses'];
         const expenseTbody      = document.getElementById('ols-expenses-body');
@@ -350,7 +363,7 @@ function lbs_generate_owner_statement() {
     // submit.
     //
     //   Base Fee       = RSVP Fee - Cleaning Fee
-    //   Cleaning Fee    = fixed amount, shown as its own column every row
+    //   Cleaning Fee    = editable amount for each booking row
     //   Co-Host Payout  = Base Fee * (cohost_pct / 100)   (does NOT include
     //                     the cleaning fee — that's its own column)
     //   Owner Payout    = Base Fee - (Base Fee * cohost_pct / 100)
@@ -368,7 +381,8 @@ function lbs_generate_owner_statement() {
             continue;
         }
 
-        $base      = $fee - $cleaning_fee;
+        $row_cleaning_fee = isset($r['cleaning']) ? (float) $r['cleaning'] : $cleaning_fee;
+        $base      = $fee - $row_cleaning_fee;
         $cohostCut = $base * ($cohost_pct / 100);
         $owner     = $base - $cohostCut;
 
@@ -377,7 +391,7 @@ function lbs_generate_owner_statement() {
             'name'     => $name,
             'fee'      => $fee,
             'base'     => $base,
-            'cleaning' => $cleaning_fee,
+            'cleaning' => $row_cleaning_fee,
             'cohost'   => $cohostCut,
             'owner'    => $owner,
         ];
@@ -496,7 +510,7 @@ function lbs_output_owner_statement_pdf($statement_period, $owner_name, $cleanin
 
     // --- Cleaning Fee / Co-Host % / Owner % summary line ---
     $pdf->SetFont('Helvetica', '', 10);
-    $pdf->Cell(60, 6, 'Cleaning Fee: $' . number_format($cleaning_fee, 2), 0, 0);
+    $pdf->Cell(60, 6, 'Default Cleaning Fee: $' . number_format($cleaning_fee, 2), 0, 0);
     $pdf->Cell(60, 6, 'Co-Host Fee: ' . number_format($cohost_pct, 2) . '%', 0, 0);
     $pdf->Cell(0, 6, 'Owner Fee: ' . number_format($owner_pct, 2) . '%', 0, 1);
     $pdf->Ln(4);
