@@ -64,6 +64,13 @@ function showTitle () {
 		<link rel="stylesheet" href="<?=$theme_uri?>assets/css/blog.css" /> 
 		<noscript><link rel="stylesheet" href="<?=$theme_uri?>assets/css/noscript.css" /></noscript>
     
+		<script async src="https://www.googletagmanager.com/gtm.js?id=GTM-PGZ6KD94"></script>
+		<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag(){dataLayer.push(arguments);}
+		gtag('js', new Date());
+		</script>
+
 
 		<script defer src="https://cloud.umami.is/script.js" data-website-id="f18f684a-ac1d-4d3f-9afe-b71fc65da1c2"></script>
 
