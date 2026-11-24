@@ -44,6 +44,11 @@ function get_next_post_date($format = 'm/d/Y') {
                 <!-- Post Title -->
                 <h1 class="post-title"><?php the_title(); ?></h1>
 
+                <!-- Post Tags -->
+                <div class="post-tags" style="margin-bottom: 0.5em;">
+                    <?php the_tags('<span>Tags: </span>', ', ', ''); ?>
+                </div>
+
                 <!-- Post Meta Information (e.g., Date, Author) -->
                 <div class="post-meta" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.5em 1.5em;">
                     <div>
@@ -82,10 +87,6 @@ function get_next_post_date($format = 'm/d/Y') {
                     <?php the_content(); ?>
                 </div>
 
-                <!-- Post Tags -->
-                <div class="post-tags">
-                    <?php the_tags('<span>Tags: </span>', ', ', ''); ?>
-                </div>
             </article>
 
         <?php endwhile; // End of the loop.
