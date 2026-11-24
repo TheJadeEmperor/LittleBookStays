@@ -45,9 +45,27 @@ function get_next_post_date($format = 'm/d/Y') {
                 <h1 class="post-title"><?php the_title(); ?></h1>
 
                 <!-- Post Meta Information (e.g., Date, Author) -->
-                <div class="post-meta">
-                    <span>Posted on: <?php echo get_the_date(); ?></span>
-                    <span> by <a href="#upsell"><?php the_author(); ?></a></span>
+                <div class="post-meta" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.5em 1.5em;">
+                    <div>
+                        <span>Posted on: <?php echo get_the_date(); ?></span>
+                        <span> by <a href="#upsell"><?php the_author(); ?></a></span>
+                    </div>
+
+                    <!-- Previous / Next post (top) -->
+                    <nav class="post-navigation-top" style="white-space: nowrap;">
+                        <?php
+                        $prev_post = get_previous_post();
+                        $next_post = get_next_post();
+                        if ($prev_post) : ?>
+                            <a href="<?php echo esc_url(get_permalink($prev_post)); ?>" title="<?php echo esc_attr(get_the_title($prev_post)); ?>">&laquo; Previous Post</a>
+                        <?php endif;
+                        if ($prev_post && $next_post) : ?>
+                            <span style="margin: 0 0.5em;">|</span>
+                        <?php endif;
+                        if ($next_post) : ?>
+                            <a href="<?php echo esc_url(get_permalink($next_post)); ?>" title="<?php echo esc_attr(get_the_title($next_post)); ?>">Next Post &raquo;</a>
+                        <?php endif; ?>
+                    </nav>
                 </div>
 
                 <br /><br />

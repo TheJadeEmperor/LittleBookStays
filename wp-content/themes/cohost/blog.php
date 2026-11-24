@@ -16,11 +16,12 @@
      // Set up paged variable for pagination
      $paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
 
-    // Create a custom query to get the latest 5 posts
+    // Create a custom query to get the latest 10 posts
     $recent_posts_query = new WP_Query(array(
-        'posts_per_page' => 5, // Set the number of posts to display
+        'posts_per_page' => 10, // Set the number of posts to display
         'post_status' => 'publish', // Only show published posts
-        'paged' => $paged // Add pagination support
+        'paged' => $paged, // Add pagination support
+        'ignore_sticky_posts' => true // Keep strict date order (don't pin sticky posts to the top)
     )); 
 
 // Check if there are posts
