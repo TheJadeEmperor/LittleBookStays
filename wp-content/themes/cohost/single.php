@@ -46,7 +46,13 @@ function get_next_post_date($format = 'm/d/Y') {
 
                 <!-- Post Tags -->
                 <div class="post-tags" style="margin-bottom: 0.5em;">
-                    <?php the_tags('<span>Tags: </span>', ', ', ''); ?>
+                    <?php
+                    // Plain-text tag names (no links — the theme has no tag archive page)
+                    $post_tags = get_the_tags();
+                    if ($post_tags) {
+                        echo '<span>Tags: </span>' . esc_html(implode(', ', wp_list_pluck($post_tags, 'name')));
+                    }
+                    ?>
                 </div>
 
                 <!-- Post Meta Information (e.g., Date, Author) -->
@@ -99,12 +105,12 @@ function get_next_post_date($format = 'm/d/Y') {
         <nav class="post-navigation" style="display: flex; justify-content: space-between; padding: 1em 0; border-top: 1px solid #ddd;">
             <div class="prev-post" style="flex: 1; text-align: left;">
                 <?php 
-                previous_post_link('%link', '« Previous Post: %title ('.get_previous_post_date().')'); 
+                previous_post_link('%link', '« Previous Post: %title'); 
                 ?>
             </div>
             <div class="next-post" style="flex: 1; text-align: right;">
                 <?php 
-                next_post_link('%link', 'Next Post: %title ('.get_next_post_date().') »' ); 
+                next_post_link('%link', 'Next Post: %title »'); 
                 ?>
             </div>
         </nav>

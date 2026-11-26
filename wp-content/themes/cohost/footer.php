@@ -13,10 +13,11 @@
 				<!-- Contact -->
 					<section id="contact">
 						<div class="inner">
-							<section>
+							<section style="display: flex; flex-direction: column; justify-content: center;">
 
 <!-- Calendly inline widget begin -->
-<div class="calendly-inline-widget" data-url="https://calendly.com/littlebookstays" style="min-width:320px;height:700px;"></div>
+<!-- data-resize makes the widget only as tall as its content, so it can be centered next to Email / Phone / Blog -->
+<div class="calendly-inline-widget" data-url="https://calendly.com/littlebookstays" data-resize="true" style="min-width:320px;height:700px;"></div>
 <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
 <!-- Calendly inline widget end -->
 

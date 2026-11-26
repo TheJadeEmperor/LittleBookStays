@@ -14,11 +14,19 @@ $post_slug = $post->post_name;
         include('privacy.php'); 
     else if ($post_slug == 'blog') 
         include('blog.php'); 
-    else {
-        if ( have_posts() ) : while ( have_posts() ) : the_post();  
-            the_content(); 
-        endwhile; endif;  
-    } 
+    else { ?>
+        <div id="main" class="alt">
+        <section id="one">
+        <div class="inner">
+        <?php
+        if ( have_posts() ) : while ( have_posts() ) : the_post();
+            the_content();
+        endwhile; endif;
+        ?>
+        </div>
+        </section>
+        </div>
+    <?php }
     ?>
   
 <?php
