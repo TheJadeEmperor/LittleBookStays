@@ -74,8 +74,9 @@ function showTitle () {
 		</script>
 
 		<!-- Google Adsense -->	
-		<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8088341606592761"
-     	crossorigin="anonymous"></script>
+		<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5439289729137804"
+    	crossorigin="anonymous"></script>  
+	 	<!-- Google Adsense -->	
 
 		<!-- Umami traffic -->
 		<script defer src="https://cloud.umami.is/script.js" data-website-id="f18f684a-ac1d-4d3f-9afe-b71fc65da1c2"></script>
